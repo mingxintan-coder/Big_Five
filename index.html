@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>五象人格测试</title>
+<meta name="description" content="基于大五人格研究的 25 型人格测试：五个维度、15 个细项、职业兴趣与个人规划。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;900&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* 布局：单栏手机优先；介绍(图鉴) → 答题 → 结果(六个分页)；"标本图鉴"式角色卡 */
+:root{
+  --bg:#f3f4f1; --surface:#ffffff; --ink:#1b2230; --muted:#5d6676; --line:#dfe2e6;
+  --accent:#2f43b8; --accent-soft:#e6e9fa; --on-accent:#ffffff;
+  --f1:#d9583b; --f2:#6b4fb8; --f3:#1f7a8c; --f4:#4a6a2e; --f5:#c2417a; --f6:#b8860b;
+  --warn:#b45309; --good:#2f7d4f;
+  --display:"Noto Serif SC","Songti SC",serif; --body:"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#12151c; --surface:#1b2029; --ink:#e8eaee; --muted:#9aa3b2; --line:#2c3340;
+  --accent:#8c9bff; --accent-soft:#252b48; --on-accent:#10132a;
+  --f1:#f07a5e; --f2:#a88ef0; --f3:#4fb3c6; --f4:#8dbb63; --f5:#ea79a8; --f6:#e0b445;
+  --warn:#f0a35a; --good:#6cc28f; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#12151c; --surface:#1b2029; --ink:#e8eaee; --muted:#9aa3b2; --line:#2c3340;
+  --accent:#8c9bff; --accent-soft:#252b48; --on-accent:#10132a;
+  --f1:#f07a5e; --f2:#a88ef0; --f3:#4fb3c6; --f4:#8dbb63; --f5:#ea79a8; --f6:#e0b445;
+  --warn:#f0a35a; --good:#6cc28f; color-scheme:dark;}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.65 var(--body)}
+main{max-width:760px;margin:0 auto;padding:24px 16px 64px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;line-height:1.3;margin:0}
+h1{font-size:34px;font-weight:900}
+h2{font-size:22px;margin:28px 0 12px}
+h3{font-size:18px}
+p{margin:0 0 12px}
+a{color:var(--accent)}
+.muted{color:var(--muted)}
+.small{font-size:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px}
+.stack{display:flex;flex-direction:column;gap:12px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+button,input{font:inherit;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:10px 16px}
+button{cursor:pointer}
+input{width:100%;max-width:280px}
+button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.primary{background:var(--accent);color:var(--on-accent);border-color:var(--accent);font-weight:700}
+.dims{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px}
+.dim{border-left:4px solid var(--accent);padding:8px 12px;background:var(--surface);border-radius:0 8px 8px 0}
+.dim b{font-family:var(--display)}
+.fam{margin-top:22px}
+.famhead{display:flex;align-items:baseline;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+.famhead .dot{width:10px;height:10px;border-radius:50%;flex:none}
+.types{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px}
+.tcard{text-align:center;padding:10px 8px 12px;border-top:4px solid var(--fc);display:flex;flex-direction:column;align-items:center;gap:2px}
+.tcard svg{width:84px;height:84px}
+.tcard b{font-family:var(--display);font-size:17px}
+.tcard span{font-size:12px;color:var(--muted);line-height:1.4}
+.code{font-family:var(--display);letter-spacing:2px;font-weight:600}
+.progress{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin:12px 0 20px}
+.progress i{display:block;height:100%;background:var(--accent);transition:width .2s}
+.q{font-size:20px;font-family:var(--display);min-height:3.2em;margin:8px 0 20px}
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt{text-align:left;padding:14px 16px}
+.opt.sel{background:var(--accent-soft);border-color:var(--accent)}
+.hero{border-top:6px solid var(--fc);display:grid;grid-template-columns:140px 1fr;gap:16px;align-items:center}
+.hero svg{width:140px;height:140px}
+@media (max-width:480px){.hero{grid-template-columns:1fr;justify-items:center;text-align:center}.hero .row{justify-content:center}}
+.hero .name{font-size:40px;font-weight:900;font-family:var(--display);color:var(--fc);line-height:1.1}
+.bars{display:flex;flex-direction:column;gap:10px}
+.bar{display:grid;grid-template-columns:4.5em 1fr 4.5em;gap:8px;align-items:center;font-size:14px}
+.track{position:relative;height:12px;background:var(--line);border-radius:6px}
+.track .mid{position:absolute;left:50%;top:-3px;bottom:-3px;width:1px;background:var(--muted)}
+.track .fill{position:absolute;top:0;bottom:0;border-radius:6px;background:var(--fc,var(--accent));opacity:.35}
+.track .pt{position:absolute;top:50%;width:16px;height:16px;border-radius:50%;background:var(--fc,var(--accent));transform:translate(-50%,-50%);border:2px solid var(--surface)}
+.bar .l{text-align:right}
+.tabnum{font-variant-numeric:tabular-nums}
+ul{margin:0;padding-left:1.2em}
+li{margin:3px 0}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:13px;padding:3px 10px;border-radius:999px;background:var(--accent-soft);color:var(--ink)}
+.pill{display:inline-block;font-size:12px;padding:1px 10px;border-radius:999px;color:#fff;background:var(--fc,var(--accent))}
+.tabs{display:flex;gap:4px;overflow-x:auto;position:sticky;top:0;background:var(--bg);padding:8px 0;z-index:3;margin-top:20px;border-bottom:1px solid var(--line)}
+.tabs button{border:none;background:none;padding:8px 12px;white-space:nowrap;color:var(--muted);border-radius:8px}
+.tabs button.on{background:var(--accent-soft);color:var(--ink);font-weight:700}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.mini{display:flex;gap:12px;align-items:center;text-align:left}
+.mini svg{width:64px;height:64px;flex:none}
+.pair svg{width:96px;height:96px}
+.stat{display:flex;flex-direction:column}
+.stat b{font-size:24px;font-family:var(--display)}
+.flag{border-left:4px solid var(--warn);padding:10px 12px;background:var(--surface);border-radius:0 8px 8px 0}
+.timeline{display:flex;flex-direction:column;gap:0;border-left:2px solid var(--line);margin-left:8px}
+.timeline .step{position:relative;padding:0 0 16px 20px}
+.timeline .step:before{content:"";position:absolute;left:-7px;top:6px;width:12px;height:12px;border-radius:50%;background:var(--fc,var(--accent))}
+.ansrow{display:grid;grid-template-columns:2.2em 1fr auto;gap:8px;padding:6px 0;border-bottom:1px solid var(--line);font-size:14px;align-items:baseline}
+.banner{background:var(--accent-soft);border-radius:12px;padding:12px 16px;margin-bottom:16px}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:flex-end;justify-content:center;padding:16px;z-index:9}
+.modal.on{display:flex}
+.modal .card{max-width:680px;width:100%;max-height:88%;overflow:auto}
+.hide{display:none!important}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<main>
+
+<section id="intro">
+  <p class="small muted">基于大五人格（Big Five）研究 · 25 种角色 · 6 大族群 · 15 个细项</p>
+  <h1>五象人格测试</h1>
+  <p style="margin-top:12px">用五个维度描述一个人，再按你最接近的“原型”归入 25 种角色之一。和 MBTI 不同，这里每个维度都是连续分数，中间值也算一种答案，所以“两边都像”的人不会被硬塞进某一边。</p>
+  <div class="dims" style="margin:16px 0">
+    <div class="dim"><b>动 ↔ 静</b><div class="small muted">能量来源：外放社交还是内守独处（外向性）</div></div>
+    <div class="dim"><b>新 ↔ 常</b><div class="small muted">好奇心：追新求变还是务实守常（开放性）</div></div>
+    <div class="dim"><b>律 ↔ 随</b><div class="small muted">做事方式：自律规划还是随性灵活（尽责性）</div></div>
+    <div class="dim"><b>和 ↔ 锋</b><div class="small muted">人际姿态：体贴协作还是直率竞争（宜人性）</div></div>
+    <div class="dim"><b>稳 ↔ 敏</b><div class="small muted">情绪基线：沉稳抗压还是敏锐易感（情绪稳定性）</div></div>
+  </div>
+  <div class="card stack">
+    <h3>开始测试</h3>
+    <p class="small muted" style="margin:0">凭第一反应作答，想的是“平时的你”，不是“理想中的你”。没有好坏之分。完整版的细项分析更可靠。</p>
+    <div class="row">
+      <button class="primary" onclick="start(60)">完整版 · 60 题 · 约 8 分钟</button>
+      <button onclick="start(30)">快速版 · 30 题 · 约 4 分钟</button>
+    </div>
+    </div>
+  <div id="recs"></div>
+  <h2>25 种角色图鉴</h2>
+  <p class="small muted">点任意角色查看详情。代码按“动静·新常·律随·和锋·稳敏”顺序，“中”表示这一维不偏向哪边。</p>
+  <div id="gallery"></div>
+  <h2>这套测试有多准？</h2>
+  <div class="card small stack">
+    <p style="margin:0">五个维度来自大五人格模型，是心理学里证据最多的人格框架，跨文化反复验证过，成年后相当稳定（几年内重测相关约 0.7–0.8）。MBTI 的四个维度和其中四个大致对应，但 MBTI 缺了“情绪稳定性”，而且强行二分，所以约有一半人几周后重测会换类型。</p>
+    <p style="margin:0">预测力要现实看待：尽责性（律）与工作表现的相关大约在 0.2–0.3，是人格里最稳的预测因子；外向性能预测领导者涌现和销售业绩；情绪敏感度与倦怠、焦虑风险相关；开放性与创造力、换行业倾向相关。这些是“概率上的倾向”，不是命运。职业兴趣部分按人格与霍兰德职业兴趣（RIASEC）的已知关联近似推算，兴趣和能力同样重要。</p>
+    <p style="margin:0">25 种角色是本测试原创的原型划分，没有经过大样本常模校准，属于“好用的归纳”，不是临床诊断，也不适合用来做招聘筛选。</p>
+  </div>
+</section>
+
+<section id="quiz" class="hide">
+  <div class="row" style="justify-content:space-between">
+    <button onclick="back()" id="backbtn">← 上一题</button>
+    <span class="small muted tabnum" id="count"></span>
+  </div>
+  <div class="progress"><i id="prog"></i></div>
+  <div class="q" id="qtext"></div>
+  <div class="opts" id="opts"></div>
+</section>
+
+<section id="result" class="hide"></section>
+</main>
+
+<div class="modal" id="modal" onclick="if(event.target===this)closeM()"><div class="card" id="mbody"></div></div>
+
+<script>
+const PAGES_URL='https://mingxintan-coder.github.io/Big_Five/';
+const DIMS=[
+ {k:'E',hi:'动',lo:'静',name:'能量来源',
+  hiT:'从人群和外部刺激中充电，说话快、行动快，容易在团队里自然成为发起者。研究上与领导者涌现、销售业绩、社交满意度正相关。',
+  loT:'在独处和深度思考中充电，偏好少而深的关系，先想后说。专注力和独立工作能力往往是优势，长时间社交会明显消耗你。'},
+ {k:'O',hi:'新',lo:'常',name:'好奇心',
+  hiT:'被新点子、抽象问题和陌生体验吸引，联想多，容易跨界。与创造力、学历追求、换行业的倾向相关，代价是可能“兴趣太多，收尾太少”。',
+  loT:'务实、脚踏实地，相信被验证过的方法，偏好熟悉和确定。执行一致性好，不会为新而新；需要留意的是环境剧变时的适应成本。'},
+ {k:'C',hi:'律',lo:'随',name:'做事方式',
+  hiT:'有计划、守承诺、能延迟满足。这是人格中对工作表现、收入、健康和长寿预测最稳定的维度。过高时可能完美主义、不够灵活。',
+  loT:'灵活、即兴、适应变化快，不被流程绑住。在多变、需要随机应变的场景里如鱼得水；需要外部结构（截止日期、搭档、工具）来弥补拖延和遗漏。'},
+ {k:'A',hi:'和',lo:'锋',name:'人际姿态',
+  hiT:'体贴、信任他人、愿意妥协，是团队的粘合剂。与良好人际关系、助人行为相关；在谈判、要薪资时容易吃亏，需要学会说“不”。',
+  loT:'直率、有竞争心、对他人动机保持怀疑，敢于冲突。在谈判、批判性评估、需要拍板的场合有优势；需要留意关系成本和“赢了道理输了人”。'},
+ {k:'S',hi:'稳',lo:'敏',name:'情绪基线',
+  hiT:'压力下保持冷静，挫折后恢复快，情绪起伏小。适合高压、危机型岗位。过稳时可能低估风险或对他人情绪不够敏感。',
+  loT:'对风险、细节和他人情绪很敏锐，体验深刻，常是早期预警者。代价是更易焦虑、反刍、倦怠；睡眠、运动和清晰的边界对你回报特别高。'}
+];
+const Q={
+E:[['周末在家宅一整天，我会觉得浑身不对劲。',1],['在饭局上，我通常是那个带话题的人。',1],['一天社交下来，我需要独处很久才能缓过来。',-1],['进到满是陌生人的房间，我会主动去打招呼。',1],['比起打语音电话，我更喜欢发文字消息。',-1],['我享受成为大家注意的焦点。',1],
+['遇到问题，我习惯先自己想清楚再说出来。',-1],['我认识各行各业的人，朋友圈很广。',1],['开会时我宁可听，也不太抢着发言。',-1],['热闹的环境让我精力充沛。',1],['比起一大群人聚会，我更享受和一两个知己深谈。',-1],['我很容易和刚认识的人聊熟。',1]],
+O:[['我会被抽象的问题（意识、宇宙、意义）吸引很久。',1],['去熟悉的餐厅，我通常点吃过的、确定好吃的菜。',-1],['我常冒出“如果……会怎样”的念头。',1],['艺术展、诗歌、实验音乐对我吸引力不大。',-1],['新技术、新 App 出来，我总想第一时间试试。',1],['我觉得经过时间检验的老办法通常最可靠。',-1],
+['我喜欢读和自己工作完全无关的书或文章。',1],['太天马行空的讨论会让我觉得不着边际。',-1],['旅行时我更想去小众、没人推荐的地方。',1],['我很少主动去找反驳自己观点的材料。',-1],['我经常同时对好几个完全不同的领域感兴趣。',1],['我喜欢稳定、可预期的日常。',-1]],
+C:[['出门前我会把要带的东西检查一遍。',1],['截止日期前一晚才开始赶工，对我是常态。',-1],['我习惯用清单、日历或待办来管理事情。',1],['我的桌面或房间常常有点乱。',-1],['答应别人的事，再麻烦我也会做完。',1],['计划赶不上变化，所以我很少做详细计划。',-1],
+['我会为了长期目标放弃眼前的享受（比如存钱、健身）。',1],['我常常买完东西才发现其实不需要。',-1],['做事我追求细节到位，宁可慢一点。',1],['我容易被手机打断，然后忘了原本要做什么。',-1],['我会定期复盘自己的进度。',1],['规则和流程常常让我觉得束手束脚。',-1]],
+A:[['看到别人难过，我很难不去管。',1],['谈判桌上，心软就是吃亏。',-1],['发生分歧时，我通常愿意先让一步。',1],['我说话比较直，不太在意会不会得罪人。',-1],['我相信大多数人本质上是善意的。',1],['竞争让我兴奋，我就是想赢。',-1],
+['团队成功比我个人出风头更重要。',1],['别人请我帮忙，我会先想想对我有什么好处。',-1],['我会记得朋友的生日和小喜好。',1],['我经常怀疑别人的动机。',-1],['批评别人之前，我会先考虑对方的感受。',1],['为了把事情办成，得罪人也值得。',-1]],
+S:[['遇到突发状况，我通常能很快冷静下来。',1],['我会反复回想自己说错的话。',-1],['别人的批评不太会影响我一整天的心情。',1],['我常为还没发生的事担心。',-1],['压力大的时候，我依然睡得着。',1],['我的情绪起伏比身边多数人大。',-1],
+['事情搞砸了，我能很快翻篇。',1],['等待重要结果时，我会坐立不安。',-1],['我很少感到莫名的焦虑或低落。',1],['一点小事就可能让我烦躁。',-1],['总体上，我对自己的处境感到踏实。',1],['别人一句无心的话，我可能会琢磨很久。',-1]]
+};
+// 细项：每维 3 个，题号对应该维 12 题的下标；方向与维度高分端一致
+const FACETS=[
+ [{n:'社交性',it:[3,4,7,11],hi:'乐于结识新朋友，人多时更自在',lo:'偏好熟悉的小圈子，陌生场合需要预热'},
+  {n:'主导性',it:[1,5,6,8],hi:'愿意发言、带节奏、承担领导角色',lo:'倾向倾听和支持，不爱抢话'},
+  {n:'活力',it:[0,2,9,10],hi:'精力外放，在热闹中充电',lo:'节奏平缓，在安静中恢复能量'}],
+ [{n:'求知思辨',it:[0,5,6,9],hi:'爱追问、读杂书、愿意挑战自己的观点',lo:'关注实用，不爱空谈理论'},
+  {n:'想象审美',it:[2,3,7,10],hi:'脑洞大，对艺术和美有感觉',lo:'偏现实，更看重功能而非形式'},
+  {n:'求变尝新',it:[1,4,8,11],hi:'喜欢新体验、新工具和不确定性',lo:'偏好熟悉和可预期的生活'}],
+ [{n:'条理',it:[0,2,3,5],hi:'计划、清单、整洁，东西各归其位',lo:'随手而为，环境和日程偏松散'},
+  {n:'责任',it:[4,8,10,11],hi:'守承诺、重细节、愿意按规矩来',lo:'更看重灵活，规则对你只是参考'},
+  {n:'自控',it:[1,6,7,9],hi:'能抵抗诱惑、按时开工、延迟满足',lo:'容易分心、拖延或冲动消费'}],
+ [{n:'同理心',it:[0,7,8,10],hi:'能感受到别人的情绪，愿意照顾人',lo:'更理性，较少被他人情绪牵动'},
+  {n:'谦让合作',it:[2,3,5,11],hi:'愿意妥协，尽量避免冲突',lo:'直言不讳，享受竞争，敢于对抗'},
+  {n:'信任',it:[1,4,6,9],hi:'默认他人善意，团队优先',lo:'对人保留怀疑，先看动机'}],
+ [{n:'抗压',it:[0,2,4,10],hi:'突发状况和批评下仍能稳住',lo:'压力会明显影响你的状态和睡眠'},
+  {n:'心绪平静',it:[3,5,7,8],hi:'很少无端担忧，情绪起伏小',lo:'容易担心未发生的事，情绪起伏较大'},
+  {n:'释怀',it:[1,6,9,11],hi:'事情过去就翻篇',lo:'容易反复回想、琢磨别人的话'}]
+];
+const FAM=[
+ {id:1,name:'开拓者族',c:'--f1',d:'外放 + 好奇：点燃新事物的人',
+  env:'变化快、允许试错、有曝光机会的环境',lead:'愿景型：用故事和热情带人',role:'发起人、对外代表',
+  path:['在创业公司或新业务线积累“从零到一”的经验，练就快速验证想法的能力','成为能带小团队开拓新市场或新产品的负责人','创业，或在大机构里负责创新业务']},
+ {id:2,name:'思想者族',c:'--f2',d:'内守 + 好奇：在脑内建造世界的人',
+  env:'安静、自主、以专业深度说话的环境',lead:'专家型：靠专业赢得尊重',role:'智囊、难题攻坚者',
+  path:['在一个领域打下扎实功底，拿到核心资质或代表作品','成为团队里“难题都找你”的专家，开始对外输出（文章、演讲、开源）','首席专家、研究负责人，或独立顾问']},
+ {id:3,name:'统御者族',c:'--f3',d:'外放 + 自律：把人和事组织起来的人',
+  env:'目标清晰、讲结果、有晋升通道的环境',lead:'指挥型：以目标和执行驱动',role:'负责人、推进者',
+  path:['主动争取带项目、管预算的机会，学会用数据汇报','中层管理，独立负责一条完整业务或一个部门','高管，或经营自己的生意']},
+ {id:4,name:'守护者族',c:'--f4',d:'自律 + 务实：让系统可靠运转的人',
+  env:'规则明确、质量至上、稳定的环境',lead:'标准型：以身作则、制度管人',role:'质量把关、流程设计者',
+  path:['考取行业证书，成为流程和规范最熟的人','专业骨干或职能部门负责人（财务、质量、合规、精算等）','首席专业官（如首席财务、首席风控）或资深专家']},
+ {id:5,name:'连接者族',c:'--f5',d:'体贴 + 协作：让人与人连在一起的人',
+  env:'合作氛围好、重视人的环境',lead:'服务型：以关系和信任驱动',role:'协调者、团队粘合剂',
+  path:['在与人打交道的岗位积累口碑和可信度','成为团队管理者、客户负责人或带教导师','组织发展、教育、咨询等“成就他人”的领导角色']},
+ {id:6,name:'自由行者族',c:'--f6',d:'随性 + 灵活：按自己节奏生活的人',
+  env:'灵活、自主、少流程的环境',lead:'身先士卒型：带头干',role:'救火队员、多面手',
+  path:['积累 2–3 项可以随身带走的硬技能','用技能换取自由度：远程、项目制或自由职业','建立自己的小事业，或稳定的多元收入组合']}
+];
+const T=[
+{n:'点火者',f:1,v:[1,1,-1,0,1],tag:'开局之王，点子永动机',
+ d:'你擅长从零到一：看到机会、拉人入伙、把气氛点燃。不怕失败，失败了换个点子再来。真正的挑战在于从一到一百，那需要耐心和细节，而这两样常常不是你的强项。',
+ b:['在新项目、新团队、新市场里表现最好','同时开好几条线，部分会烂尾','面对风险偏乐观，决策快'],
+ j:['创业者','业务拓展/BD','新产品孵化','风险投资','活动策划','创意总监'],
+ s:'找一个“律”分高的搭档负责收尾；每季度砍掉一半的点子，只留最值得做的。'},
+{n:'布道者',f:1,v:[1,1,0,1,0],tag:'把想法讲成信仰的人',
+ d:'你热爱新观点，更热爱把它分享给别人。天生会讲故事，能让抽象的东西变得有温度，人们愿意因为你而关注一件事。',
+ b:['喜欢教、讲、写、带人','容易被新理念感召，也容易感召别人','在乎认同感，冷场时会失落'],
+ j:['培训师/讲师','品牌与内容营销','社群运营','科普作者','用户研究','公关'],
+ s:'定期检验你传播的观点是否有证据支撑；把“讲得好”变成“讲得对”，影响力会更持久。'},
+{n:'冒险家',f:1,v:[1,1,-1,-1,1],tag:'风险越大越清醒',
+ d:'你追求刺激和新鲜，敢下注、敢顶撞、敢走别人不走的路。压力反而让你兴奋。你的高光时刻常出现在混乱局面里，也最容易在平稳期觉得无聊。',
+ b:['对规则和权威天然不服','愿意承担高风险换高回报','做决定快，事后很少后悔'],
+ j:['交易员','调查记者','创业者','极限/户外行业','危机谈判','战地/突发报道'],
+ s:'给自己设硬性止损线，在金钱和身体上都是；无聊时别靠制造冲突来找刺激。'},
+{n:'舞台家',f:1,v:[1,1,-1,1,-1],tag:'情绪饱满的表达者',
+ d:'你感受丰富、表达力强，能把自己的情绪变成作品和感染力。在聚光灯下发光，但也对评价格外敏感，一条差评可能盖过十条好评。',
+ b:['需要被看见、被回应','灵感驱动，状态起伏明显','对审美和氛围要求高'],
+ j:['演员/主持','主播/内容创作者','设计师','音乐人','广告创意','活动主持'],
+ s:'建立不依赖外界评价的作品节奏（比如固定更新日）；把情绪当素材，而不是当方向盘。'},
+
+{n:'架构师',f:2,v:[-1,1,1,-1,1],tag:'在脑中先建好整座城',
+ d:'你喜欢复杂系统，习惯先想清楚全局再动手。独立、理性、标准高，对低效和模糊容忍度低。你的方案常常是对的，但未必被人接受。',
+ b:['擅长长期规划和系统设计','更相信逻辑而不是人情','对“为什么”追问到底'],
+ j:['系统架构师','战略咨询','精算/量化建模','科研负责人','城市规划','产品架构'],
+ s:'“对的方案”还需要“能被执行”。花时间解释你的思路，并主动收集反对意见。'},
+{n:'学者',f:2,v:[-1,1,1,0,0],tag:'安静而持久的求知者',
+ d:'你对知识有长期的热情，愿意花几年钻研一个问题。严谨、耐心、讲证据，是团队里查资料最靠谱的人。',
+ b:['偏爱深度胜过广度','写比说更流畅','对模糊的结论不满意'],
+ j:['研究员','数据科学家','精算师','图书/档案/编辑','大学教师','医学研究'],
+ s:'给研究设定“够好就发表”的标准；适度把成果讲给外行听，影响力会放大很多。'},
+{n:'梦游诗人',f:2,v:[-1,1,-1,1,-1],tag:'内心宇宙比外面更大',
+ d:'你有丰富的内心世界，敏感、共情、充满想象。你看到别人看不到的细节和意义，也更容易被世界的粗糙刺痛。',
+ b:['需要大量独处来消化感受','灵感来时废寝忘食，没灵感时很难开工','重视意义胜过报酬'],
+ j:['作家/编剧','插画/艺术创作','心理咨询','游戏叙事设计','音乐创作','翻译'],
+ s:'给创作一个最小的固定仪式（每天 30 分钟）；把敏感留给作品，把边界留给人际。'},
+{n:'解谜者',f:2,v:[-1,1,-1,-1,1],tag:'独行的破局高手',
+ d:'你享受难题本身，讨厌繁文缛节。冷静、怀疑、独立，喜欢按自己的方式拆解问题。最好的工作状态是：给你一个难题，然后别管你。',
+ b:['对权威和流行观点天然怀疑','兴趣驱动，没兴趣的事很难做好','偏好远程和独立工作'],
+ j:['独立开发者','安全研究/白帽','量化研究','侦查/情报分析','发明/硬件黑客','技术顾问'],
+ s:'把有价值的发现写下来、发出去；“独立”不等于“孤立”，保留两三个能互相挑战的同行。'},
+
+{n:'统帅',f:3,v:[1,0,1,-1,1],tag:'天生的拍板者',
+ d:'你目标清晰、执行力强、敢做难的决定。在混乱中自然接管局面，大家也愿意跟着你。需要留意的是，你的速度可能让别人跟不上，也可能听不见异议。',
+ b:['喜欢掌控，讨厌拖沓','压力下更果断','以结果论英雄'],
+ j:['总经理/高管','创业 CEO','项目总监','军警指挥','投资经理','律师合伙人'],
+ s:'刻意培养一个敢跟你唱反调的副手；做重大决定前问一句“谁会因此受伤”。'},
+{n:'操盘手',f:3,v:[1,-1,1,-1,0],tag:'用数字说话的实干派',
+ d:'你务实、强势、讲效率，关心的是“今天能不能多成交一单”。擅长把现成的模式做到极致，对空谈很不耐烦。',
+ b:['追求可量化的结果','对流程和 KPI 敏感','竞争心强，喜欢排名'],
+ j:['销售管理','运营总监','采购/供应链','零售店长','物流管理','生产主管'],
+ s:'偶尔留出探索新打法的空间；团队成员不全是数字，关心人能让业绩更可持续。'},
+{n:'组织者',f:3,v:[1,-1,1,1,1],tag:'让一切井井有条的主心骨',
+ d:'你可靠、热心、有条理，是活动和团队里大家第一个想到的人。你在意秩序，也在意每个人是否被照顾到。',
+ b:['擅长协调多方、安排细节','重视传统和规矩','承担责任多，偶尔不好意思拒绝'],
+ j:['人力资源','活动/会务','学校管理','项目经理','社区/公共服务','行政主管'],
+ s:'学会授权，不必每件事亲力亲为；留意自己是不是在替别人承担本该他们承担的事。'},
+{n:'谋略家',f:3,v:[1,1,1,0,1],tag:'既能想远，又能落地',
+ d:'你兼具远见和执行力，能把一个大愿景拆成步骤，再说服别人一起干。这是最“全能”的组合之一，风险在于什么都想抓。',
+ b:['善于把复杂问题讲清楚','同时管战略和细节','对自己要求很高'],
+ j:['管理咨询','产品负责人','投资银行','政策研究','创业联合创始人','企业战略'],
+ s:'你最稀缺的是注意力，定期问自己“这件事必须由我做吗”。'},
+
+{n:'基石',f:4,v:[-1,-1,1,0,1],tag:'安静而可靠的承重墙',
+ d:'你踏实、稳定、一丝不苟，不出风头，但出了问题大家第一个想到你。你的价值常被低估，因为你让一切看起来都“理所当然地正常”。',
+ b:['偏爱明确的规则和流程','错误率低，耐得住重复','不喜欢临时变卦'],
+ j:['会计/审计','精算','财务分析','工程师','药剂师','数据库管理'],
+ s:'主动让别人看见你的贡献（周报、复盘）；适度接触新工具，避免被行业变化甩下。'},
+{n:'守门人',f:4,v:[0,-1,1,-1,0],tag:'规则的最后防线',
+ d:'你对风险和漏洞嗅觉灵敏，敢说“不行”。严格、较真、讲原则，是组织里不可或缺但未必讨喜的角色。',
+ b:['擅长发现问题和漏洞','坚持标准，不怕得罪人','对模糊地带不舒服'],
+ j:['合规/风控','质量控制','审计','法务','安全监管','核保'],
+ s:'说“不行”的同时给出“怎样才行”；这会让你从“拦路的”变成“护航的”。'},
+{n:'照料者',f:4,v:[0,-1,1,1,0],tag:'用行动表达关心',
+ d:'你温和、负责、细致，习惯默默照顾好身边的人和事。别人可能不记得你说了什么，但会记得你做了什么。',
+ b:['重视稳定的关系和环境','做事周到，考虑他人需要','不擅长为自己争取'],
+ j:['护士','教师（中小学）','行政/助理','客户成功','社工','医疗管理'],
+ s:'把“照顾自己”也写进日程；学习谈判和要求加薪，你值得。'},
+{n:'匠人',f:4,v:[-1,0,1,-1,1],tag:'手艺即尊严',
+ d:'你专注、冷静、追求极致，宁愿把一件事做到最好，也不想做十件普通的事。你说话少，作品替你说话。',
+ b:['长时间专注而不觉累','对质量要求近乎苛刻','不喜欢被打扰和开无意义的会'],
+ j:['外科医生','软件工程师','技师/工匠','建筑设计','飞行员','厨师'],
+ s:'偶尔从“做得更好”抬头看“值不值得做”；把手艺教给别人是放大价值的最快方式。'},
+
+{n:'调停者',f:5,v:[0,0,0,1,1],tag:'风暴中的定海神针',
+ d:'你温和而稳定，能在冲突中让各方冷静下来。不偏激、不抢功，大家愿意把心事和难题交给你。',
+ b:['擅长倾听和化解矛盾','情绪稳定，不易被带节奏','有时过于回避立场'],
+ j:['调解/仲裁','人力资源','客户关系','护理管理','外交/公共事务','团队教练'],
+ s:'在关键问题上亮出自己的立场；“和”是手段，不是目标。'},
+{n:'人气王',f:5,v:[1,0,-1,1,1],tag:'走到哪儿哪儿热闹',
+ d:'你乐观、友善、自来熟，能让陌生人迅速放下戒备。你是聚会的灵魂，也是团队气氛的保障，只是计划和截止日期常被你抛在脑后。',
+ b:['人脉广，消息灵通','行动随心情和人走','乐于帮忙，偶尔答应太多'],
+ j:['销售','餐饮/酒店','公关','导游/旅游','招聘','社群运营'],
+ s:'用日历替你记住承诺；把人脉变成可持续的关系，需要一点系统性的维护。'},
+{n:'倾听者',f:5,v:[-1,0,0,1,-1],tag:'能接住别人情绪的人',
+ d:'你安静、敏感、共情力强，别人愿意在你面前卸下防备。你能察觉细微的情绪变化，也因此更容易累。',
+ b:['偏好一对一的深度交流','容易吸收他人的情绪','做决定前会顾虑很多人的感受'],
+ j:['心理咨询师','教师','康复治疗','人力资源','编辑','用户体验研究'],
+ s:'建立情绪的“下班时间”；你可以共情，但不必替别人承担后果。'},
+{n:'后援',f:5,v:[0,-1,0,1,-1],tag:'默默托底的那个人',
+ d:'你善良、实在、在意他人，喜欢稳定熟悉的环境和关系。你常常是别人背后的支撑，自己的需要却最后才被想起。',
+ b:['重视家庭和熟人圈','对变化和冲突感到不安','乐于做支持性的工作'],
+ j:['行政/后勤','护理','客服','社区服务','幼教','药房/医疗辅助'],
+ s:'每周做一件只为自己的事；在不熟悉的变化面前，先小步尝试，焦虑会降得很快。'},
+
+{n:'游侠',f:6,v:[0,0,-1,0,1],tag:'随遇而安，到哪都能活',
+ d:'你适应力强、心态松弛、不被计划束缚。很多技能都会一点，换个环境也能很快上手。你追求的是自由度，而不是头衔。',
+ b:['讨厌被固定流程管死','遇事不慌，见招拆招','长期规划偏弱'],
+ j:['自由职业','摄影/旅行内容','咨询类兼职','外勤/现场技术','小生意','数字游民'],
+ s:'自由需要底盘：留足应急金、做好基本的长期规划（养老、保险），自由才能持久。'},
+{n:'实干家',f:6,v:[1,-1,-1,-1,1],tag:'少说多做，现场解决',
+ d:'你行动派、务实、胆大，讨厌纸上谈兵。紧急情况下你是最先冲上去的人，日常的文书和规矩则让你头疼。',
+ b:['遇事先动手再说','对体力和现场工作有好感','直来直去，脾气来得快去得快'],
+ j:['消防/急救','运动员/教练','工程现场','销售一线','警务','餐饮创业'],
+ s:'在冲动前给自己数三秒；把经验写下来，可以让你从“干活的人”变成“带队的人”。'},
+{n:'冲浪者',f:6,v:[1,0,-1,0,-1],tag:'跟着浪走的情绪派',
+ d:'你热情、敏感、活在当下，情绪像天气一样来去。你感染力强、朋友多，但状态好坏会明显影响你的效率和决定。',
+ b:['做事看心情','社交是你调节情绪的方式','冲动消费或决定的可能性较高'],
+ j:['内容创作','时尚/潮流行业','活动执行','销售','餐饮服务','演艺'],
+ s:'状态差时不做重大决定（辞职、大额消费、分手）；规律作息和运动对你效果特别明显。'},
+{n:'隐士',f:6,v:[-1,-1,-1,0,0],tag:'低调地过自己的日子',
+ d:'你不追逐热闹，也不追逐新奇，喜欢简单、安静、按自己节奏生活。你对外界的要求不多，满足感来自小而确定的东西。',
+ b:['回避竞争和聚光灯','满足于稳定的小圈子','动力更多来自兴趣而不是目标'],
+ j:['档案/资料管理','技术支持','园艺/手作','夜班/独立岗位','远程工作','仓储/质检'],
+ s:'小目标也是目标：给自己一个温和的成长计划，避免多年后发现“一直在原地”。'},
+
+{n:'平衡者',f:5,v:[0,0,0,0,0],tag:'什么场合都能切换的人',
+ d:'你在五个维度上都不极端，能根据场合调整自己：该热闹时热闹，该专注时专注。这是灵活的优势，也可能让你觉得“自己没什么特点”。',
+ b:['适应各种团队和角色','少有明显短板','有时难以说清自己真正想要什么'],
+ j:['项目管理','综合管理','咨询','教育','公共服务','产品经理'],
+ s:'你的特点由“选择”而不是“天性”决定：找到一件让你愿意长期投入的事，就是你的标签。'}
+];
+const ICON={
+flame:'<path d="M12 3c1 4 5 5 5 10a5 5 0 0 1-10 0c0-3 2-4 2-6 1 1 2 2 3 2 0-2-1-4 0-6z"/>',
+megaphone:'<path d="M3 10v4h3l7 4V6L6 10H3z"/><path d="M16 9a4 4 0 0 1 0 6"/><path d="M18.5 6.5a8 8 0 0 1 0 11"/>',
+compass:'<circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/>',
+mic:'<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M6 11a6 6 0 0 0 12 0"/><path d="M12 17v4M9 21h6"/>',
+ruler:'<path d="M4 20V4l16 16z"/><path d="M8 16v-4l4 4z"/><path d="M4 8h2M4 12h2"/>',
+book:'<path d="M3 5h7a2 2 0 0 1 2 2v12a2 2 0 0 0-2-2H3z"/><path d="M21 5h-7a2 2 0 0 0-2 2v12a2 2 0 0 1 2-2h7z"/>',
+moon:'<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/><path d="M17 4v3M15.5 5.5h3"/>',
+puzzle:'<path d="M4 8h4a2 2 0 1 1 4 0h4v4a2 2 0 1 1 0 4v4H4z"/>',
+flag:'<path d="M5 21V4"/><path d="M5 4h13l-3 4 3 4H5"/>',
+chart:'<path d="M4 20h16"/><path d="M7 16v-4M12 16V9M17 16V5"/><path d="M5 9l5-4 4 2 5-4"/>',
+clipboard:'<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 3h6v3H9z"/><path d="M9 11l1.5 1.5L14 9M9 16h6"/>',
+target:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/>',
+pillar:'<path d="M4 21h16M5 7h14M12 3l8 4H4z"/><path d="M7 7v14M12 7v14M17 7v14"/>',
+shield:'<path d="M12 3l8 3v6c0 5-4 8-8 9-4-1-8-4-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/>',
+heart:'<path d="M12 20s-8-5-8-11a4 4 0 0 1 8-1.5A4 4 0 0 1 20 9c0 6-8 11-8 11z"/>',
+hammer:'<path d="M13 4l7 7-3 3-7-7z"/><path d="M11.5 8.5L3 17l3 3 8.5-8.5"/>',
+scale:'<path d="M12 4v16M7 20h10M4 7h16"/><path d="M6 7l-3 6h6zM18 7l-3 6h6z"/>',
+sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2"/>',
+bubble:'<path d="M4 5h16v11H10l-5 4v-4H4z"/><path d="M8 10h.01M12 10h.01M16 10h.01"/>',
+umbrella:'<path d="M3 12a9 9 0 0 1 18 0z"/><path d="M12 12v6a2 2 0 0 1-4 0"/>',
+map:'<path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z"/><path d="M9 4v14M15 6v14"/>',
+bolt:'<path d="M13 2L4 14h7l-1 8 9-12h-7z"/>',
+wave:'<path d="M2 10c3 0 3-3 6-3s3 3 6 3 3-3 6-3"/><path d="M2 15c3 0 3-3 6-3s3 3 6 3 3-3 6-3"/><path d="M2 20c3 0 3-3 6-3s3 3 6 3 3-3 6-3"/>',
+mug:'<path d="M5 9h11v7a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4z"/><path d="M16 11h2a2 2 0 0 1 0 4h-2"/><path d="M8 3c0 2 2 2 0 4M12 3c0 2 2 2 0 4"/>',
+yinyang:'<circle cx="12" cy="12" r="9"/><path d="M12 3a4.5 4.5 0 0 1 0 9 4.5 4.5 0 0 0 0 9"/><circle cx="12" cy="7.5" r="1"/><circle cx="12" cy="16.5" r="1"/>'
+};
+const ICS=['flame','megaphone','compass','mic','ruler','book','moon','puzzle','flag','chart','clipboard','target','pillar','shield','heart','hammer','scale','sun','bubble','umbrella','map','bolt','wave','mug','yinyang'];
+T.forEach((t,i)=>t.ic=ICS[i]);
+
+const SKIN=['#f4d0ac','#e8b98f','#c98e62'];
+const HAIRC=['#2b2320','#4a3424','#6b4a2e','#1e2638','#8a5a3c'];
+function avatar(i){
+  const t=T[i],[E,O,C,A,S]=t.v,fc=`var(${FAM[t.f-1].c})`,skin=SKIN[i%3],hc=HAIRC[(i*3)%5];
+  const hs=i%5;
+  const hair=[
+    `<path d="M36 50a24 24 0 0 1 48 0c-6-6-14-9-24-9s-18 3-24 9z" fill="${hc}"/>`,
+    `<path d="M35 52l4-14 5 6 4-11 6 8 6-10 6 10 5-8 4 11 5-6 5 14c-8-6-16-8-25-8s-17 2-25 8z" fill="${hc}"/>`,
+    `<path d="M34 72V50a26 26 0 0 1 52 0v22h-8V54c-6-5-12-7-18-7s-12 2-18 7v18z" fill="${hc}"/>`,
+    `<circle cx="60" cy="22" r="9" fill="${hc}"/><path d="M36 50a24 24 0 0 1 48 0c-8-5-16-7-24-7s-16 2-24 7z" fill="${hc}"/>`,
+    `<path d="M36 52a24 24 0 0 1 48-4c-10 0-22-2-30-10-4 6-10 10-18 14z" fill="${hc}"/>`][hs];
+  const eyeY=56;
+  const eyes=S<0?`<circle cx="51" cy="${eyeY}" r="3.6" fill="#1b2230"/><circle cx="69" cy="${eyeY}" r="3.6" fill="#1b2230"/><circle cx="52.2" cy="${eyeY-1.2}" r="1.2" fill="#fff"/><circle cx="70.2" cy="${eyeY-1.2}" r="1.2" fill="#fff"/>`
+     :`<path d="M47.5 ${eyeY}q3.5-3 7 0M65.5 ${eyeY}q3.5-3 7 0" stroke="#1b2230" stroke-width="2.4" fill="none" stroke-linecap="round"/>`;
+  const brows=A<0?`<path d="M46 48l9 2M74 48l-9 2" stroke="#1b2230" stroke-width="2" stroke-linecap="round"/>`:(O>0?`<path d="M46 47q4-3 8-1M66 46q4-2 8 1" stroke="#1b2230" stroke-width="1.8" fill="none" stroke-linecap="round"/>`:'');
+  const mouth=E>0?`<path d="M52 65q8 9 16 0z" fill="#1b2230"/><path d="M55 68.5q5 3 10 0" fill="#e8766b"/>`:`<path d="M54 66q6 4 12 0" stroke="#1b2230" stroke-width="2.2" fill="none" stroke-linecap="round"/>`;
+  const glasses=(C>0&&E<=0)?`<g stroke="#1b2230" stroke-width="1.8" fill="none"><circle cx="51" cy="56" r="6"/><circle cx="69" cy="56" r="6"/><path d="M57 56h6"/></g>`:'';
+  const cheeks=A>0?`<circle cx="45" cy="63" r="3.5" fill="#e8766b" opacity=".35"/><circle cx="75" cy="63" r="3.5" fill="#e8766b" opacity=".35"/>`:'';
+  return `<svg viewBox="0 0 120 120" role="img" aria-label="${t.n}角色形象">
+  <circle cx="60" cy="60" r="58" fill="${fc}" opacity=".14"/>
+  <path d="M26 120c0-24 14-38 34-38s34 14 34 38z" fill="${fc}"/>
+  <path d="M52 82l8 10 8-10" fill="none" stroke="#fff" stroke-width="2.5" opacity=".7"/>
+  <circle cx="60" cy="56" r="24" fill="${skin}"/>
+  ${hair}${brows}${eyes}${glasses}${cheeks}${mouth}
+  <circle cx="94" cy="94" r="18" fill="var(--surface)" stroke="${fc}" stroke-width="3"/>
+  <g transform="translate(82 82)" fill="none" stroke="${fc}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICON[t.ic]}</g>
+  </svg>`;
+}
+
+const LIK=['非常不符合','比较不符合','说不准','比较符合','非常符合'];
+const RIA=[
+ {k:'R',n:'实用型',w:[-0.2,-0.1,0.2,-0.2,0.3],d:'动手、操作工具和设备、看得见的成果',j:['工程技术','制造与维修','建筑施工','农林户外','IT运维']},
+ {k:'I',n:'研究型',w:[-0.3,0.6,0.2,-0.1,0.1],d:'分析、研究、解决抽象问题',j:['科研','数据科学','精算/量化','医学','软件开发']},
+ {k:'A',n:'艺术型',w:[0.1,0.7,-0.3,0.1,-0.1],d:'创造、表达、不拘一格',j:['设计','写作/编辑','媒体内容','表演与音乐','建筑/空间']},
+ {k:'S',n:'社会型',w:[0.4,0.1,0.1,0.6,0],d:'帮助、教导、照顾他人',j:['教育培训','医疗护理','心理咨询','社会工作','人力资源']},
+ {k:'E',n:'企业型',w:[0.6,0.1,0.2,-0.3,0.2],d:'说服、领导、追求影响力和成果',j:['管理','销售/商务','创业','法律','金融投资']},
+ {k:'C',n:'常规型',w:[-0.1,-0.5,0.6,0.1,0.1],d:'有序、精确、按规范处理信息',j:['财务会计','审计/合规','行政运营','数据管理','银行保险']}
+];
+const ACT=[
+ {hi:['每周留出一段完全独处的时间，用来深度思考而不是社交','开会时刻意晚一点发言，先听完再总结','把人脉整理成名单，每月主动联系 2–3 个“弱关系”'],
+  lo:['每月参加一次小型、主题明确的活动（读书会、行业沙龙），它比大型聚会更适合你','提前准备好 2–3 句自我介绍和观点，降低社交启动成本','用写作（周报、文章、帖子）让别人看见你的想法']},
+ {hi:['每个新点子先写下“怎样算成功、多久验证”，30 天验证不了就放下','每季度只选 1 个新领域深入，其他放进“以后清单”','把灵感记在一个固定地方，定期整理成作品'],
+  lo:['每月尝试一件小的新事物（新路线、新菜、新工具）','每周读一篇本行业的趋势文章，留意正在发生的变化','遇到新方法先问“它解决了什么问题”，再决定用不用']},
+ {hi:['给每项任务设定“够好”的标准，别在 90 分以上过度打磨','每周留一块不排计划的时间，练习应对变化','把一部分工作交给别人，接受他们的做法和你不同'],
+  lo:['只用一个待办工具，每天早上列出今天最重要的 3 件事','重要的事设外部截止日期，或找人互相监督','开启自动储蓄或自动定投，让系统替你自律']},
+ {hi:['练习一句话拒绝：“这次我帮不了，但可以……”','谈薪或谈价前查好市场数据，让数字替你开口','每周问自己一次：有没有为了和气而委屈自己'],
+  lo:['提意见时先说对方做对的地方，再说问题','每次冲突后自问：赢了道理，有没有输了关系','有意识地在团队里公开感谢一位同事']},
+ {hi:['定期请信任的人指出你可能低估的风险','留意身边人的情绪信号，别人未必像你这么抗压','在关键时刻主动承担危机处理的角色'],
+  lo:['固定作息，每周至少运动 3 次，这是对情绪回报最高的投资','担心时把顾虑写下来，分成“能控制的”和“不能控制的”','重要决定隔一晚再做，避免在情绪高点或低点拍板']}
+];
+
+let order=[],ans=[],idx=0,N=60,shared=null,tab='overview',CUR=null;
+const $=id=>document.getElementById(id);
+const fcol=f=>`var(${FAM[f-1].c})`;
+const codeOf=v=>v.map((x,i)=>x>0?DIMS[i].hi:x<0?DIMS[i].lo:'中').join('');
+const pct=x=>Math.round((x+1)/2*100);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+function buildOrder(n){const per=n/5,o=[];for(let r=0;r<per;r++)DIMS.forEach((d,di)=>{const it=Q[d.k][r];o.push({d:di,r,t:it[0],s:it[1]})});return o;}
+
+function renderGallery(){
+  $('gallery').innerHTML=FAM.map(F=>`<div class="fam"><div class="famhead"><span class="dot" style="background:var(${F.c})"></span><h3>${F.name}</h3><span class="small muted">${F.d}</span></div>
+  <div class="types">${T.map((t,i)=>t.f===F.id?`<button class="tcard" style="--fc:var(${F.c})" onclick="showT(${i})">${avatar(i)}<b>${t.n}</b><span class="code">${codeOf(t.v)}</span><span>${t.tag}</span></button>`:'').join('')}</div></div>`).join('');
+}
+function typeBlock(t){
+  return `<p>${t.d}</p>
+  <h3 style="margin:12px 0 6px">行为倾向</h3><ul>${t.b.map(x=>`<li>${x}</li>`).join('')}</ul>
+  <h3 style="margin:12px 0 6px">适合的职业方向</h3><div class="chips">${t.j.map(x=>`<span class="chip">${x}</span>`).join('')}</div>
+  <h3 style="margin:12px 0 6px">给你的建议</h3><p style="margin:0">${t.s}</p>`;
+}
+function showT(i){
+  const t=T[i];
+  $('mbody').innerHTML=`<div class="row" style="justify-content:space-between"><span class="pill" style="--fc:${fcol(t.f)}">${FAM[t.f-1].name}</span><button onclick="closeM()">关闭</button></div>
+  <div class="mini" style="margin:8px 0">${avatar(i)}<div><h2 style="margin:0;color:${fcol(t.f)}">${t.n}</h2><div class="muted small"><span class="code">${codeOf(t.v)}</span> · ${t.tag}</div></div></div>${typeBlock(t)}<p class="small muted" style="margin:12px 0 0">对应 MBTI：${protoMbti(t.v)} · 气质最像的星座：${ZOD[nearestZod(t.v)].n}</p>`;
+  $('modal').classList.add('on');
+}
+function protoMbti(v){return [[0,'E','I'],[1,'N','S'],[3,'F','T'],[2,'J','P']].map(([k,h,l])=>v[k]>0?h:v[k]<0?l:h+'/'+l).join(' ')}
+function closeM(){$('modal').classList.remove('on')}
+function view(id){['intro','quiz','result'].forEach(x=>$(x).classList.toggle('hide',x!==id));scrollTo(0,0)}
+
+function start(n){N=n;order=buildOrder(n);ans=new Array(n).fill(null);idx=0;shared=null;
+  if(location.hash)history.replaceState(null,'',location.pathname);view('quiz');drawQ();}
+function drawQ(){
+  const q=order[idx];
+  $('count').textContent=`${idx+1} / ${order.length}`;
+  $('prog').style.width=(idx/order.length*100)+'%';
+  $('qtext').textContent=q.t;
+  $('opts').innerHTML=LIK.map((l,i)=>`<button class="opt${ans[idx]===i+1?' sel':''}" onclick="pick(${i+1})">${l}</button>`).join('');
+  $('backbtn').style.visibility=idx?'visible':'hidden';
+}
+function pick(v){ans[idx]=v;if(idx<order.length-1){idx++;setTimeout(drawQ,120)}else finish();}
+function back(){if(idx>0){idx--;drawQ()}}
+
+// ---------- 计分 ----------
+function analyze(answers){
+  const n=answers.length,o=buildOrder(n);
+  const sum=[0,0,0,0,0],cnt=[0,0,0,0,0],fs=FACETS.map(f=>f.map(()=>({s:0,c:0})));
+  const pos=[[],[],[],[],[]],neg=[[],[],[],[],[]];
+  o.forEach((q,i)=>{const k=q.s*(answers[i]-3)/2;sum[q.d]+=k;cnt[q.d]++;
+    FACETS[q.d].forEach((f,fi)=>{if(f.it.includes(q.r)){fs[q.d][fi].s+=k;fs[q.d][fi].c++}});
+    (q.s>0?pos:neg)[q.d].push(k);});
+  const u=sum.map((s,i)=>s/cnt[i]);
+  const facets=fs.map(d=>d.map(x=>x.c?x.s/x.c:0));
+  const neutral=answers.filter(a=>a===3).length/n, extreme=answers.filter(a=>a===1||a===5).length/n;
+  const avg=a=>a.reduce((x,y)=>x+y,0)/(a.length||1);
+  const incons=avg(DIMS.map((d,i)=>Math.abs(avg(pos[i])-avg(neg[i]))));
+  const acq=avg(answers.map(a=>(a-3)/2)); // 不分正反的同意倾向
+  const m=match(u);
+  const a=amp(u);
+  const ria=RIA.map(r=>{const w=r.w.reduce((s,x)=>s+Math.abs(x),0);return {...r,sc:Math.round((r.w.reduce((s,x,k)=>s+x*a[k],0)/w+1)/2*100)}});
+  return {answers,n,o,u,facets,neutral,extreme,incons,acq,m,a,ria};
+}
+function amp(u){return u.map(x=>Math.max(-1,Math.min(1,x*2.5)))}
+function match(u){
+  const a=amp(u),flat=Math.max(...a.map(Math.abs))<0.5,maxD=Math.sqrt(20);
+  return T.map((t,i)=>{const d=Math.sqrt(t.v.reduce((s,x,k)=>s+(x-a[k])**2,0));return {i,p:Math.round(100*(1-d/maxD))-(t.n==='平衡者'&&!flat?100:0)}}).filter(x=>x.p>-50).sort((x,y)=>y.p-x.p);
+}
+function partners(R){
+  const me=R.m[0].i,a=R.a;
+  const cand=T.map((t,i)=>({i,t})).filter(x=>x.i!==me&&x.t.n!=='平衡者');
+  const d=(t,k)=>Math.abs(t.v[k]-a[k]);
+  const work=cand.map(x=>({i:x.i,s:0.6*d(x.t,1)+d(x.t,2)-d(x.t,3)-0.5*d(x.t,4)})).sort((p,q)=>q.s-p.s)[0].i;
+  const life=cand.map(x=>({i:x.i,s:-d(x.t,3)-d(x.t,4)-0.5*d(x.t,2)+0.4*d(x.t,0)+(x.t.v[3]>0?0.5:0)+(x.t.v[4]>0?0.3:0)})).sort((p,q)=>q.s-p.s)[0].i;
+  const fric=cand.map(x=>({i:x.i,s:d(x.t,2)+d(x.t,3)+0.5*d(x.t,0)+((x.t.v[3]<0&&a[3]<0)?1:0)})).sort((p,q)=>q.s-p.s)[0].i;
+  return {work,life,fric};
+}
+function risks(R){
+  const [E,O,C,A,S]=R.u,f=R.facets,out=[];
+  if(C<-0.25||f[2][2]<-0.3)out.push(['拖延与财务','自控分偏低的人更容易拖延和冲动消费。把储蓄、还款、重要截止日期都交给自动化和外部提醒。']);
+  if(S<-0.25)out.push(['倦怠','情绪敏感度较高，长期高压、频繁冲突的岗位消耗更大。留意睡眠和身体信号，压力持续时及早寻求支持，包括专业的心理支持。']);
+  if(A<-0.25&&E>0.2)out.push(['人际摩擦','直率加外放，容易在不经意间压过别人。重要合作中多问一句“你怎么看”。']);
+  if(A>0.35)out.push(['过度付出','你很难拒绝别人，容易接下太多请求，或在谈判中让步太早。']);
+  if(O>0.35&&C<0)out.push(['半途而废','兴趣广、点子多，但收尾能力相对弱，项目容易停在 70%。']);
+  if(C>0.4&&S<0)out.push(['完美主义焦虑','高标准加高敏感，容易对自己过度苛刻，把“没做到 100 分”当成失败。']);
+  if(E<-0.3&&O<0)out.push(['舒适区停滞','安稳是你的优势，但多年不变的环境可能让技能慢慢过时。']);
+  if(S>0.4&&A<0)out.push(['低估他人感受','你的抗压和直率可能让你察觉不到别人已经很累或不舒服。']);
+  if(!out.length)out.push(['整体均衡','没有特别突出的风险点。保持对自己状态的定期觉察就好。']);
+  return out;
+}
+
+// ---------- 结果页 ----------
+function finish(){
+  const r={id:Date.now().toString(36),ts:Date.now(),name:'我',ans:ans.join(''),sign:null};
+  const L=loadRecs();L.unshift(r);saveRecs(L);
+  showResult(ans.slice(),null,r.id);
+}
+function showResult(answers,sharedName,recId,sign){
+  shared=sharedName;CUR=analyze(answers);tab='overview';LOVEP=null;
+  CUR.rec=recId||null;
+  const rec=recId?loadRecs().find(x=>x.id===recId):null;
+  CUR.sign=sign!=null?sign:(rec&&rec.sign!=null?rec.sign:null);
+  CUR.name=rec?rec.name:(sharedName||'');
+  view('result');renderResult();
+}
+function renderResult(){
+  const R=CUR,t=T[R.m[0].i],i0=R.m[0].i;
+  const myCode=R.u.map((x,i)=>x>0.2?DIMS[i].hi:x<-0.2?DIMS[i].lo:'中').join('');
+  const tabs=[['overview','总览'],['facets','细项'],['career','职业'],['relate','合作与关系'],['love','恋爱配对'],['astro','MBTI·星座'],['plan','个人规划'],['answers','逐题']];
+  const who=shared!==null?(shared?esc(shared)+' 的':'这份'):'你的';
+  $('result').innerHTML=`
+  ${shared!==null?`<div class="banner small stack" style="gap:8px"><span>这是${shared?'「'+esc(shared)+'」':'朋友'}分享的五象人格测试结果（${R.n} 题版）。</span><div class="row"><button class="primary" style="padding:6px 12px" onclick="start(60)">我也来测</button><button style="padding:6px 12px" id="savesh" onclick="saveShared()">保存到我的记录</button></div></div>`:''}
+  <div class="card hero" style="--fc:${fcol(t.f)}">
+    ${avatar(i0)}
+    <div class="stack" style="gap:6px">
+      <span class="small muted">${who}角色 · 匹配度 ${R.m[0].p}%</span>
+      <div class="row"><span class="pill">${FAM[t.f-1].name}</span><span class="code small">${myCode}</span></div>
+      <div class="name">${t.n}</div>
+      <div class="muted">${t.tag}</div>
+    </div>
+  </div>
+  <div class="tabs" role="tablist">${tabs.map(([k,l])=>`<button role="tab" class="${tab===k?'on':''}" onclick="tab='${k}';renderResult()">${l}</button>`).join('')}</div>
+  <div id="tabbody" style="margin-top:12px">${TABS[tab](R,t)}</div>
+  ${shareBlock(R,t)}
+  <div class="row" style="margin-top:24px"><button class="primary" onclick="home()">返回首页 · 看图鉴</button><button onclick="start(60)">${shared!==null?'我也来测（60 题）':'重新测试'}</button></div>`;
+}
+function bars(R,fc){return `<div class="bars">${DIMS.map((d,i)=>{const p=pct(R.u[i]);const lo=Math.min(p,50),w=Math.abs(p-50);
+  return `<div class="bar" style="--fc:${fc}"><span class="l">${d.lo}</span><div class="track"><span class="fill" style="left:${lo}%;width:${w}%"></span><span class="mid"></span><span class="pt" style="left:${p}%"></span></div><span>${d.hi} <span class="muted tabnum">${p}</span></span></div>`}).join('')}</div>`}
+const TABS={
+ overview(R,t){
+  const fc=fcol(t.f);
+  const dimText=DIMS.map((d,i)=>{const x=R.u[i],ax=Math.abs(x);const lvl=ax<0.2?'居中':(ax<0.5?'偏':'明显')+(x>0?d.hi:d.lo);
+    const txt=ax<0.2?`你在“${d.hi}”和“${d.lo}”之间比较平衡，能根据情境切换，两边的特点都用得上。`:(x>0?d.hiT:d.loT);
+    return `<div class="card small"><b>${d.name} · ${lvl}</b><p style="margin:6px 0 0">${txt}</p></div>`}).join('');
+  return `<div class="card">${bars(R,fc)}<p class="small muted" style="margin:12px 0 0">数字为 0–100 分，50 为中点。圆点离中线越远，这个特点越明显。</p></div>
+  <h2>关于「${t.n}」</h2><div class="card">${typeBlock(t)}</div>
+  <h2>也有几分像</h2>
+  <div class="grid2">${[R.m[1],R.m[2]].map(x=>`<button class="card mini" style="border-top:4px solid ${fcol(T[x.i].f)}" onclick="showT(${x.i})">${avatar(x.i)}<div><b style="font-family:var(--display)">${T[x.i].n}</b><div class="small muted">匹配度 ${x.p}% · ${T[x.i].tag}</div></div></button>`).join('')}</div>
+  <p class="small muted" style="margin-top:8px">匹配度接近时，说明处在两种角色的交界处，几份描述都值得读。</p>
+  <h2>五个维度逐项解读</h2><div class="stack">${dimText}</div>`;
+ },
+ facets(R,t){
+  const fc=fcol(t.f);
+  const all=[];FACETS.forEach((d,di)=>d.forEach((f,fi)=>all.push({di,f,x:R.facets[di][fi]})));
+  const top=[...all].sort((a,b)=>Math.abs(b.x)-Math.abs(a.x)).slice(0,3);
+  const cons=R.incons<0.35?['高','你的正向题和反向题回答一致，结果可信度较高。']:R.incons<0.6?['中等','少数维度上正反题回答不太一致，相关结论请参考着看。']:['偏低','不少题目前后矛盾，可能是作答较快或对自己的看法还在变化，建议过段时间重测。'];
+  return `${R.n<60?'<div class="flag small" style="margin-bottom:12px">快速版每个细项只有 1–4 道题，细项分数仅供参考。完整版更可靠。</div>':''}
+  <div class="card stack">
+   <h3>最鲜明的三个细项</h3>
+   <ul>${top.map(x=>`<li><b>${x.f.n}</b>（${pct(x.x)}）：${x.x>=0?x.f.hi:x.f.lo}</li>`).join('')}</ul>
+  </div>
+  ${FACETS.map((d,di)=>`<h2>${DIMS[di].name} <span class="small muted">${DIMS[di].lo} ↔ ${DIMS[di].hi} · 总分 ${pct(R.u[di])}</span></h2>
+   <div class="card stack">${d.map((f,fi)=>{const x=R.facets[di][fi],p=pct(x);return `<div><div class="row" style="justify-content:space-between"><b>${f.n}</b><span class="tabnum muted">${p}</span></div>
+    <div class="track" style="--fc:${fc};margin:6px 0"><span class="fill" style="left:${Math.min(p,50)}%;width:${Math.abs(p-50)}%"></span><span class="mid"></span><span class="pt" style="left:${p}%"></span></div>
+    <div class="small muted">${Math.abs(x)<0.2?'居中：两种倾向都有':(x>0?f.hi:f.lo)}</div></div>`}).join('')}</div>`).join('')}
+  <h2>作答风格</h2>
+  <div class="grid2">
+   <div class="card stat"><span class="small muted">前后一致性</span><b>${cons[0]}</b><span class="small">${cons[1]}</span></div>
+   <div class="card stat"><span class="small muted">选“说不准”的比例</span><b class="tabnum">${Math.round(R.neutral*100)}%</b><span class="small">${R.neutral>0.35?'偏高：你可能比较谨慎，或很多情况“看场合”。各维度分数会被拉向中间。':'正常范围。'}</span></div>
+   <div class="card stat"><span class="small muted">选极端选项的比例</span><b class="tabnum">${Math.round(R.extreme*100)}%</b><span class="small">${R.extreme>0.5?'偏高：你对自己的判断很果断，分数差异会被放大一些。':'正常范围。'}</span></div>
+  </div>`;
+ },
+ career(R,t){
+  const rs=[...R.ria].sort((a,b)=>b.sc-a.sc),F=FAM[t.f-1],fc=fcol(t.f);
+  return `<div class="card stack">
+   <h3>职业兴趣倾向（霍兰德 RIASEC，近似推算）</h3>
+   <div class="bars">${R.ria.map(r=>`<div class="bar" style="grid-template-columns:5.5em 1fr 2.5em;--fc:${fc}"><span class="l">${r.n}</span><div class="track"><span class="fill" style="left:0;width:${r.sc}%;opacity:.8"></span></div><span class="tabnum muted">${r.sc}</span></div>`).join('')}</div>
+   <p class="small muted" style="margin:0">你的代码：<b class="code">${rs.slice(0,3).map(r=>r.k).join('')}</b>（${rs.slice(0,3).map(r=>r.n).join(' · ')}）。这是从人格推算的兴趣倾向，实际兴趣以你的经历为准。</p>
+  </div>
+  <h2>最可能适合的领域</h2>
+  <div class="grid2">${rs.slice(0,2).map(r=>`<div class="card"><b>${r.n}</b><p class="small muted" style="margin:4px 0 8px">${r.d}</p><div class="chips">${r.j.map(x=>`<span class="chip">${x}</span>`).join('')}</div></div>`).join('')}</div>
+  <h2>「${t.n}」的典型职业</h2><div class="card"><div class="chips">${t.j.map(x=>`<span class="chip">${x}</span>`).join('')}</div></div>
+  <h2>工作风格</h2>
+  <div class="card stack small">
+   <div><b>最舒服的环境：</b>${F.env}</div>
+   <div><b>领导风格：</b>${F.lead}</div>
+   <div><b>团队里的位置：</b>${F.role}</div>
+   <div><b>工作表现预测：</b>${R.u[2]>0.3?'尽责性较高，这是人格中对工作表现预测最稳的因素，你在需要长期坚持和可靠交付的岗位上更占优势。':R.u[2]<-0.3?'尽责性偏低，在需要随机应变的岗位上更自在；在讲究流程的岗位上，需要借助工具和搭档弥补。':'尽责性居中，环境的结构化程度会明显影响你的发挥。'}</div>
+   <div><b>领导潜力：</b>${R.u[0]>0.3&&R.u[4]>0?'外向加情绪稳定，在团队中容易被视为领导者。':R.u[0]>0.3?'外向使你容易被看见；提升抗压能力能让你的领导力更持久。':'你更可能以专业和可靠赢得影响力，而不是靠气场。'}</div>
+  </div>`;
+ },
+ relate(R,t){
+  const P=partners(R);
+  const card=(i,title,why)=>`<button class="card mini" style="border-top:4px solid ${fcol(T[i].f)}" onclick="showT(${i})">${avatar(i)}<div><span class="small muted">${title}</span><br><b style="font-family:var(--display)">${T[i].n}</b><div class="small">${why}</div></div></button>`;
+  const [E,O,C,A,S]=R.u;
+  return `<div class="grid2">
+   ${card(P.work,'最佳工作搭档','在想法和执行上和你互补，人际风格又相近，分工自然。')}
+   ${card(P.life,'相处最舒服','宜人性和情绪基线相近，日常节奏合拍，冲突少。')}
+   ${card(P.fric,'容易摩擦','做事节奏和人际风格差异大。合作前先说清分工和底线。')}
+  </div>
+  <h2>你在关系中的样子</h2>
+  <div class="card stack small">
+   <div><b>沟通方式：</b>${E>0.2?'先说出来再一起想，喜欢即时讨论。':E<-0.2?'先想清楚再说，文字表达往往比口头更完整。':'能说能写，看场合切换。'}${A<-0.2?'说话直接，重点先行。':A>0.2?'措辞照顾对方感受，有时会绕弯。':''}</div>
+   <div><b>面对冲突：</b>${A<-0.2?'倾向正面交锋，把问题摆上桌面。':A>0.2?'倾向回避或先让步，问题可能积累。':'视情况而定，能对事不对人。'}${S<-0.2?'情绪来得快，事后容易反复回想。':S>0.2?'情绪稳定，冲突后恢复快。':''}</div>
+   <div><b>别人需要知道的：</b>${E<-0.2?'独处不是冷淡，是在充电。':''}${C>0.3?'临时改计划会让你不舒服。':C<-0.3?'你需要一定的自由度，太细的规定会让你憋闷。':''}${S<-0.2?'一句肯定对你比别人想象的更重要。':''}${O>0.3?'你喜欢聊点子和可能性。':''}</div>
+  </div>
+  <h2>与不同族群相处的小技巧</h2>
+  <div class="card small"><ul>
+   <li><b>开拓者族：</b>给他们讲愿景，帮他们收尾</li>
+   <li><b>思想者族：</b>给足思考时间，用逻辑而不是情绪说服</li>
+   <li><b>统御者族：</b>先说结论和数字，别绕弯</li>
+   <li><b>守护者族：</b>尊重流程，提前通知变化</li>
+   <li><b>连接者族：</b>先关心人，再谈事</li>
+   <li><b>自由行者族：</b>给目标别给步骤，留出灵活空间</li>
+  </ul></div>`;
+ },
+ plan(R,t){
+  const F=FAM[t.f-1],fc=fcol(t.f);
+  const order=R.u.map((x,i)=>({i,x})).sort((a,b)=>Math.abs(b.x)-Math.abs(a.x));
+  const acts=[];order.slice(0,3).forEach(o=>{const L=o.x>=0?ACT[o.i].hi:ACT[o.i].lo;acts.push({d:DIMS[o.i],a:L[acts.length%3],side:o.x>=0?DIMS[o.i].hi:DIMS[o.i].lo})});
+  const all=[];FACETS.forEach((d,di)=>d.forEach((f,fi)=>all.push({di,f,x:R.facets[di][fi]})));
+  // 最值得提升：对多数结果有益的方向（律、稳）取最低细项，否则取最极端的细项
+  const growth=all.filter(x=>(x.di===2||x.di===4)).sort((a,b)=>a.x-b.x)[0];
+  const strength=[...all].sort((a,b)=>b.x-a.x)[0];
+  const rk=risks(R);
+  const rs=[...R.ria].sort((a,b)=>b.sc-a.sc);
+  return `<div class="card stack">
+   <h3>未来 30 天：三个小行动</h3>
+   <ol style="margin:0;padding-left:1.3em">${acts.map(a=>`<li style="margin:6px 0">${a.a}<div class="small muted">针对你最突出的特点：${a.d.name}偏“${a.side}”</div></li>`).join('')}</ol>
+  </div>
+  <h2>一年成长目标</h2>
+  <div class="grid2">
+   <div class="card"><span class="small muted">放大优势</span><h3 style="margin:4px 0">${strength.f.n}</h3><p class="small" style="margin:0">${strength.f.hi}。找一个能让这一点被反复用上的位置或项目，这比补短板见效快得多。</p></div>
+   <div class="card"><span class="small muted">补一块短板</span><h3 style="margin:4px 0">${growth.f.n}</h3><p class="small" style="margin:0">${growth.x<0?growth.f.lo+'。':'已经不错，保持即可。'}${growth.di===2?'律（尽责性）对工作表现、收入和健康的预测最稳定，是“性价比”最高的提升方向。':'情绪稳定性和长期幸福感、倦怠风险关系密切，提升它等于给其他能力加了一层保护。'}</p></div>
+  </div>
+  <h2>职业路径参考</h2>
+  <div class="card"><div class="timeline" style="--fc:${fc}">
+   <div class="step"><b>1–2 年</b><div class="small">${F.path[0]}</div></div>
+   <div class="step"><b>3–5 年</b><div class="small">${F.path[1]}</div></div>
+   <div class="step"><b>10 年</b><div class="small">${F.path[2]}</div></div>
+  </div><p class="small muted" style="margin:0">可以重点关注的领域：${rs.slice(0,2).map(r=>r.j.slice(0,3).join('、')).join('；')}。</p></div>
+  <h2>需要留心的地方</h2>
+  <div class="stack">${rk.map(r=>`<div class="flag small"><b>${r[0]}</b><div>${r[1]}</div></div>`).join('')}</div>
+  <h2>「${t.n}」的长期建议</h2><div class="card"><p style="margin:0">${t.s}</p></div>
+  <p class="small muted" style="margin-top:12px">人格在成年后仍会缓慢变化，尤其是尽责性和情绪稳定性，通常随年龄增长而提高。刻意练习和环境改变都能推动它。半年后可以再测一次，看看变化。</p>`;
+ },
+ answers(R){
+  return `<p class="small muted">每题的原始回答。↺ 表示反向计分题（同意代表该维度的另一端）。</p>
+  <div class="card">${R.o.map((q,i)=>`<div class="ansrow"><span class="muted tabnum">${i+1}</span><span>${q.t}<span class="muted small"> · ${DIMS[q.d].name}${q.s<0?' ↺':''}</span></span><b class="small" style="white-space:nowrap">${LIK[R.answers[i]-1]}</b></div>`).join('')}</div>`;
+ }
+};
+
+// ---------- 记录 ----------
+let LOVEP=null;
+function loadRecs(){try{const L=JSON.parse(localStorage.getItem('wx_recs')||'[]');
+  const old=localStorage.getItem('wx_ans');if(old&&!L.length){L.push({id:'old',ts:Date.now(),name:'我',ans:old,sign:null});localStorage.setItem('wx_recs',JSON.stringify(L))}
+  return L.filter(r=>r&&/^[1-5]+$/.test(r.ans)&&(r.ans.length===30||r.ans.length===60))}catch(e){return []}}
+function saveRecs(L){try{localStorage.setItem('wx_recs',JSON.stringify(L.slice(0,100)))}catch(e){}}
+function recType(r){return match(analyze(r.ans.split('').map(Number)).u)[0].i}
+function fmtDate(ts){const d=new Date(ts);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+function renderRecs(){
+  const L=loadRecs();
+  if(!L.length){$('recs').innerHTML='';return}
+  $('recs').innerHTML=`<h2>我的记录 <span class="small muted">${L.length} 条，保存在这台设备的浏览器里</span></h2>
+  <div class="stack">${L.map(r=>{const i=recType(r),t=T[i];return `<div class="card mini" style="border-left:4px solid ${fcol(t.f)}">${avatar(i)}
+   <div style="flex:1;min-width:0"><b style="font-family:var(--display)">${esc(r.name||'未命名')}</b> · ${t.n}${r.sign!=null?' · '+ZOD[r.sign].n:''}
+   <div class="small muted">${fmtDate(r.ts)} · ${r.ans.length} 题版</div>
+   <div class="row" style="margin-top:6px"><button style="padding:6px 12px" onclick="openRec('${r.id}')">查看</button><button style="padding:6px 12px" onclick="pairWith('${r.id}')">配对</button><button style="padding:6px 12px" onclick="delRec('${r.id}',this)">删除</button></div></div></div>`}).join('')}</div>`;
+}
+function openRec(id){const r=loadRecs().find(x=>x.id===id);if(r)showResult(r.ans.split('').map(Number),null,r.id)}
+function pairWith(id){const L=loadRecs();const base=L.find(r=>r.id!==id&&r.name==='我')||L.find(r=>r.id!==id);if(!base){openRec(id);return}openRec(base.id);tab='love';setPartner('rec',id)}
+function delRec(id,btn){if(btn.dataset.sure!=='1'){btn.dataset.sure='1';btn.textContent='再点一次确认删除';return}
+  saveRecs(loadRecs().filter(x=>x.id!==id));renderRecs()}
+function renameCur(v){v=v.trim();if(!CUR.rec)return;const L=loadRecs();const r=L.find(x=>x.id===CUR.rec);if(r){r.name=v||'我';CUR.name=r.name;saveRecs(L)}}
+function saveShared(){
+  const L=loadRecs();const a=CUR.answers.join('');
+  if(!L.some(r=>r.ans===a&&r.name===(shared||'朋友')))L.unshift({id:Date.now().toString(36),ts:Date.now(),name:shared||'朋友',ans:a,sign:CUR.sign});
+  saveRecs(L);$('savesh').textContent='已保存，可在首页“我的记录”里找到';
+}
+function setSign(v){
+  CUR.sign=v===''?null:+v;
+  if(CUR.rec){const L=loadRecs();const r=L.find(x=>x.id===CUR.rec);if(r){r.sign=CUR.sign;saveRecs(L)}}
+  renderResult();
+}
+function signFromDate(v){if(!v)return;const d=new Date(v+'T12:00');const md=(d.getMonth()+1)*100+d.getDate();
+  const i=ZOD.findIndex((z,k)=>{const s=z.s,e=ZOD[(k+1)%12].s;return s<e?(md>=s&&md<e):(md>=s||md<e)});setSign(String(i))}
+
+// ---------- MBTI ----------
+function mbti(u){
+  const L=[[0,'E','I'],[1,'N','S'],[3,'F','T'],[2,'J','P']];
+  const letters=L.map(([k,h,l])=>({k,ch:u[k]>=0?h:l,alt:u[k]>=0?l:h,x:Math.abs(u[k])}));
+  const code=letters.map(l=>l.ch).join('')+(u[4]>=0?'-A':'-T');
+  const weak=[...letters].sort((a,b)=>a.x-b.x)[0];
+  const alt=letters.map(l=>l===weak?l.alt:l.ch).join('');
+  return {code,core:letters.map(l=>l.ch).join(''),letters,alt,weak};
+}
+const TEMP={NF:['理想主义者','重视意义、成长和真实的关系'],NT:['理性探索者','追求能力、逻辑和对世界的理解'],SJ:['传统守护者','重视责任、秩序和归属'],SP:['自由技艺者','重视行动、体验和当下的灵活应对']};
+function temper(core){return core[1]==='N'?TEMP['N'+core[2]]:TEMP['S'+(core[3]==='J'?'J':'P')]}
+
+// ---------- 星座（娱乐） ----------
+const ZOD=[
+ {n:'白羊座',el:'火',d:'3/21–4/19',s:321,v:[1,0,-1,-1,0],k:'冲劲、直接、爱挑战'},
+ {n:'金牛座',el:'土',d:'4/20–5/20',s:420,v:[-1,-1,1,1,1],k:'稳定、务实、享受生活'},
+ {n:'双子座',el:'风',d:'5/21–6/21',s:521,v:[1,1,-1,0,0],k:'机灵、多变、好奇'},
+ {n:'巨蟹座',el:'水',d:'6/22–7/22',s:622,v:[-1,-1,0,1,-1],k:'顾家、体贴、敏感'},
+ {n:'狮子座',el:'火',d:'7/23–8/22',s:723,v:[1,0,0,-1,1],k:'自信、慷慨、爱表现'},
+ {n:'处女座',el:'土',d:'8/23–9/22',s:823,v:[-1,0,1,0,-1],k:'细致、挑剔、追求完美'},
+ {n:'天秤座',el:'风',d:'9/23–10/23',s:923,v:[1,1,0,1,0],k:'优雅、求平衡、善社交'},
+ {n:'天蝎座',el:'水',d:'10/24–11/22',s:1024,v:[-1,0,1,-1,-1],k:'深沉、执着、洞察力强'},
+ {n:'射手座',el:'火',d:'11/23–12/21',s:1123,v:[1,1,-1,0,1],k:'乐观、爱自由、爱冒险'},
+ {n:'摩羯座',el:'土',d:'12/22–1/19',s:1222,v:[-1,-1,1,-1,1],k:'务实、有野心、能吃苦'},
+ {n:'水瓶座',el:'风',d:'1/20–2/18',s:120,v:[0,1,-1,-1,1],k:'独立、前卫、理性'},
+ {n:'双鱼座',el:'水',d:'2/19–3/20',s:219,v:[-1,1,-1,1,-1],k:'浪漫、共情、富想象'}
+];
+const ELEM={火:'行动与热情',土:'务实与稳定',风:'思维与交流',水:'情感与直觉'};
+const COMBO={
+ 1:{火:'火上浇油型：行动力和点子都满格，适合冲锋陷阵。风险是同时点燃太多火堆，需要一个会灭火的搭档。',土:'带刹车的发动机：冒险心被一份务实感拉住，点子更容易落地。别让“稳妥”掐掉最大胆的那个想法。',风:'思想的风暴眼：聊天就能聊出商业计划，社交场上如鱼得水。提醒自己：说出来不等于做出来。',水:'感性的开拓者：你开拓新事物，往往是因为被打动。作品有温度，但容易因为情绪起伏中途换方向。'},
+ 2:{火:'冷静的内核，滚烫的执念：平时安静，一旦认定方向就全力以赴。小心固执，别把讨论变成辩论赛。',土:'最沉得住气的学者：能十年磨一剑，结论扎实。偶尔要抬头看看外面的变化。',风:'纯粹的思想家：脑中永远有好几个理论在打架。把思考写下来、讲出来，才能被世界看见。',水:'深海型思考者：直觉和洞察力极强，看人看事入木三分，又藏得很深。容易想太多，把猜测当成事实；信任一旦破裂很难修复。'},
+ 3:{火:'天生的带头人：目标感强、气场足，适合打硬仗。别让急躁压过倾听。',土:'可靠的掌舵人：讲规矩、重结果，团队跟着你心里踏实。变革期要主动拥抱新方法。',风:'会说话的指挥官：擅长协调和谈判，能把复杂局面讲清楚。警惕把精力花在“管理印象”而不是管理事情。',水:'有温度的领导者：你在乎目标，也在乎人，下属愿意为你拼。代价是容易把团队的压力背在自己身上。'},
+ 4:{火:'有原则的执行者：守规矩但不死板，必要时敢拍板。别把“坚持标准”变成“不容异议”。',土:'最纯正的守护者：稳、细、靠谱，是任何组织的定海神针。挑战在于面对剧变时的弹性。',风:'流程的设计师：你不只守规则，还爱优化规则，适合搭建制度和系统。',水:'温柔的守门人：细心周到，善于在规则里照顾人情。小心为了别人的需要透支自己。'},
+ 5:{火:'热情的组局者：哪里需要气氛哪里就有你。你的热情也需要回流，别只付出不补给。',土:'最可靠的朋友：话不多但事事有回应，关系长久。偶尔也要说出自己的需要。',风:'天生的社交家：人脉广、会聊天、懂分寸。小心关系广而不深。',水:'共情满格：别人的情绪你都接得住。最需要学会的是情绪边界。'},
+ 6:{火:'说走就走：活在当下、敢闯敢试，人生经历丰富。记得给未来的自己留点底牌。',土:'松弛的务实派：不追逐也不焦虑，日子过得踏实自在。给自己一个温和的成长目标。',风:'自由的灵魂：兴趣多变、朋友遍地，最怕被束缚。找到一件值得长期投入的事会让你更有力量。',水:'随心而行的感受者：跟着感觉走，体验深刻。重大决定前，给理性一点发言权。'}
+};
+function zodFit(a,zi){const z=ZOD[zi].v;return Math.round(100*(1-z.reduce((s,x,k)=>s+Math.abs(x-a[k]),0)/10))}
+function nearestZod(v){return ZOD.map((z,i)=>({i,d:z.v.reduce((s,x,k)=>s+Math.abs(x-v[k]),0)})).sort((a,b)=>a.d-b.d)[0].i}
+
+// ---------- 恋爱配对 ----------
+function love(a,b){
+  const lvl=v=>0.35*v[3]+0.35*v[4]+0.2*v[2]+0.1*v[0];
+  const L=(lvl(a)+lvl(b))/2;
+  const D=k=>Math.abs(a[k]-b[k]);
+  const md=(D(1)+D(2)+D(3)+D(4))/4,sim=1-md;
+  let sc=58+20*L+14*sim;
+  const notes={good:[],risk:[],tip:[]};
+  if(a[4]<-0.3&&b[4]<-0.3){sc-=8;notes.risk.push('两个人都比较敏感，情绪容易互相传染：一个人低落，另一个也跟着焦虑。');notes.tip.push('约定“情绪暂停”信号：任何一方说出来，就先停下争论，各自冷静 20 分钟再谈。')}
+  if(a[3]<-0.3&&b[3]<-0.3){sc-=8;notes.risk.push('两人都不爱让步，吵架容易升级成“谁对谁错”的输赢之争。');notes.tip.push('吵架时只谈“我感觉”，不谈“你总是”；先认同对方一点，再说分歧。')}
+  if(D(2)>1.2){sc-=4;notes.risk.push('一个爱计划、一个随性：家务、花钱、旅行安排是高发矛盾点。');notes.tip.push('把容易吵的事分工到人：计划型负责预算和行程，随性型负责临场决策和制造惊喜。')}
+  if(D(0)>1.5){sc-=3;notes.risk.push('社交需求差异大：周末一个想出门见人，一个只想宅家。');notes.tip.push('约定比例，比如每月两次一起社交、两次只属于两个人，其余各自安排。')}
+  if(D(1)>1.2){notes.risk.push('一个追求新鲜，一个偏爱稳定：一方觉得无聊，另一方觉得被折腾。');notes.tip.push('轮流决定周末活动，新鲜派每次只“加一点新”，给稳定派一个熟悉的锚点。')}
+  if((a[3]<-0.3&&b[3]>0.3)||(b[3]<-0.3&&a[3]>0.3)){notes.risk.push('一方强势、一方忍让：表面和平，委屈可能在暗处积累。');notes.tip.push('忍让的一方定期说出自己的需要，强势的一方主动问“你真正想要的是什么”。')}
+  if((a[4]>0.5&&b[4]<0)||(b[4]>0.5&&a[4]<0)){sc+=3;notes.good.push('一个情绪稳、一个感受细：稳的人是情绪的锚，敏感的人能更早察觉关系里的小问题。')}
+  if(a[3]>0.3&&b[3]>0.3)notes.good.push('两人都愿意体谅和让步，冲突来了也容易修复。');
+  if(a[2]>0.3&&b[2]>0.3)notes.good.push('都靠谱守约，过日子的基本盘稳：钱、家务、承诺不太会成为矛盾。');
+  if(D(1)<0.6)notes.good.push('好奇心水平接近，聊得来，对“怎么过周末”的想象也接近。');
+  if(D(0)>1&&D(0)<=1.5)notes.good.push('一动一静：一个负责拓展社交圈，一个负责经营两个人的小世界。');
+  if(a[4]>0.3&&b[4]>0.3)notes.good.push('两人情绪都稳，关系里的“天气”大多晴朗，遇事能就事论事。');
+  if(!notes.good.length)notes.good.push('没有特别突出的天然优势，关系质量更多取决于相处中的经营。');
+  if(!notes.risk.length)notes.risk.push('没有明显的性格冲突点。');
+  if(!notes.tip.length)notes.tip.push('保持定期的深度聊天，比如每周一次不看手机的晚饭。');
+  sc=Math.max(35,Math.min(98,Math.round(sc)));
+  const c=x=>Math.max(5,Math.min(99,Math.round(x)));
+  const sub=[
+   ['情绪安全感',c(50+25*(a[4]+b[4])/2+15*Math.min(a[4],b[4]))],
+   ['默契度',c(100*(1-md/2))],
+   ['生活节奏',c(100*(1-(D(2)*0.6+D(0)*0.4)/2))],
+   ['冲突修复力',c(50+25*(a[3]+b[3])/2+15*(a[4]+b[4])/2)]];
+  const O=(a[1]+b[1])/2,E=(a[0]+b[0])/2;
+  const date=O>0&&E>0?'一起去一座没去过的城市、逛展、参加新奇的体验活动':O>0?'博物馆、书店、一起看纪录片然后聊上一晚':E>0?'约朋友聚餐、一起运动、看演出或比赛':'在家做饭、固定路线散步、一起追一部剧';
+  const label=sc>=85?'天作之合':sc>=75?'非常合拍':sc>=65?'稳中有甜':sc>=55?'需要磨合':'挑战模式';
+  return {sc,label,sub,notes,date};
+}
+function setPartner(kind,val){
+  if(kind==='rec'){const r=loadRecs().find(x=>x.id===val);if(!r)return;const A=analyze(r.ans.split('').map(Number));LOVEP={name:r.name||'TA',a:A.a,i:A.m[0].i}}
+  else if(kind==='type'){if(val==='')return;const i=+val;LOVEP={name:T[i].n+'（类型原型）',a:T[i].v.slice(),i}}
+  else if(kind==='link'){const h=val.slice(val.indexOf('#'));const p=parseHash(h);if(!p){$('lerr').textContent='没认出这个链接，请粘贴完整的分享链接（包含 #r- 那一段）。';return}
+    const A=analyze(p.ans);LOVEP={name:p.name||'TA',a:A.a,i:A.m[0].i}}
+  renderResult();
+}
+TABS.love=function(R,t){
+  const recs=loadRecs().filter(r=>r.id!==CUR.rec);
+  const me=shared!==null?(shared||'TA'):(CUR.name&&CUR.name!=='我'?CUR.name:'你');
+  let out=`<div class="card stack">
+   <h3>选择配对对象</h3>
+   ${recs.length?`<label class="small" for="lrec">从我的记录中选</label><select id="lrec" onchange="setPartner('rec',this.value)" style="font:inherit;padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink)"><option value="">请选择</option>${recs.map(r=>`<option value="${r.id}">${esc(r.name||'未命名')} · ${T[recType(r)].n} · ${fmtDate(r.ts)}</option>`).join('')}</select>`:''}
+   <label class="small" for="llink">粘贴 TA 的分享链接</label>
+   <div class="row"><input id="llink" placeholder="https://…#r-…" style="flex:1;max-width:none"><button onclick="setPartner('link',$('llink').value)">配对</button></div>
+   <div class="small" id="lerr" style="color:var(--warn)"></div>
+   <label class="small" for="ltype">还没测？先按 TA 的角色类型估算</label>
+   <select id="ltype" onchange="setPartner('type',this.value)" style="font:inherit;padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink)"><option value="">选择一种角色</option>${T.map((x,i)=>`<option value="${i}">${x.n}（${FAM[x.f-1].name}）</option>`).join('')}</select>
+  </div>`;
+  if(!LOVEP)return out+`<p class="small muted" style="margin-top:12px">配对算法依据的是关系研究中较稳定的发现：双方的宜人性（和）、情绪稳定性（稳）和尽责性（律）越高，关系满意度往往越高；“性格相似”本身的作用比人们以为的小，但在做事节奏和情绪上差异过大时，摩擦会增多。仅供娱乐和沟通参考。</p>`;
+  const L=love(R.a,LOVEP.a),pt=T[LOVEP.i];
+  out+=`<div class="card" style="margin-top:12px;text-align:center;border-top:6px solid var(--f5)">
+   <div class="row pair" style="justify-content:center;gap:4px">${avatar(R.m[0].i)}<span style="font-size:28px;color:var(--f5)">♥</span>${avatar(LOVEP.i)}</div>
+   <div class="small muted">${esc(me)}（${t.n}） × ${esc(LOVEP.name)}（${pt.n}）</div>
+   <div style="font-family:var(--display);font-size:56px;font-weight:900;color:var(--f5);line-height:1.1" class="tabnum">${L.sc}</div>
+   <div style="font-family:var(--display);font-size:20px">${L.label}</div>
+  </div>
+  <div class="card bars" style="margin-top:12px">${L.sub.map(([n,v])=>`<div class="bar" style="grid-template-columns:5.5em 1fr 2.5em;--fc:var(--f5)"><span class="l">${n}</span><div class="track"><span class="fill" style="left:0;width:${v}%;opacity:.8"></span></div><span class="tabnum muted">${v}</span></div>`).join('')}</div>
+  <h2>你们的优势</h2><div class="card"><ul>${L.notes.good.map(x=>`<li>${x}</li>`).join('')}</ul></div>
+  <h2>可能的摩擦</h2><div class="stack">${L.notes.risk.map(x=>`<div class="flag small">${x}</div>`).join('')}</div>
+  <h2>相处建议</h2><div class="card"><ul>${L.notes.tip.map(x=>`<li>${x}</li>`).join('')}</ul></div>
+  <h2>适合你们的约会</h2><div class="card"><p style="margin:0">${L.date}</p></div>
+  <p class="small muted" style="margin-top:12px">配对指数基于人格研究的统计规律，只能说明“起点”的难易，不能决定关系的结果。沟通方式和共同经历的影响远大于性格本身。</p>`;
+  return out;
+};
+TABS.astro=function(R,t){
+  const M=mbti(R.u),tp=temper(M.core);
+  const clar=x=>x<0.15?'接近中间':x<0.4?'略偏':'明显';
+  const lbl={E:'外向',I:'内向',N:'直觉',S:'实感',F:'情感',T:'思考',J:'判断',P:'感知'};
+  let out=`<div class="card stack">
+   <span class="small muted">对应的 MBTI（换算）</span>
+   <div style="font-family:var(--display);font-size:40px;font-weight:900;letter-spacing:3px;color:var(--accent)">${M.code}</div>
+   <div><b>${tp[0]}</b> <span class="muted small">· ${tp[1]}</span></div>
+   <div class="bars">${M.letters.map(l=>`<div class="small">${l.ch} ${lbl[l.ch]} · <span class="muted">${clar(l.x)}</span></div>`).join('')}</div>
+   <p class="small muted" style="margin:0">最不确定的是 ${M.weak.ch}/${M.weak.alt}，所以你也可能被测成 <b>${M.alt}</b>。后缀 -A/-T 来自“稳↔敏”维度。</p>
+  </div>
+  <p class="small muted">换算方法：外向性→E/I，开放性→N/S，宜人性→F/T，尽责性→J/P。研究中这几对的相关大约在 0.4–0.7，所以换算是近似的，靠近中间的字母尤其不稳定。</p>
+  <h2>星座组合分析 <span class="small muted">娱乐</span></h2>
+  <div class="card stack">
+   <label class="small" for="zsel">选择星座</label>
+   <select id="zsel" onchange="setSign(this.value)" style="font:inherit;padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink)"><option value="">请选择</option>${ZOD.map((z,i)=>`<option value="${i}"${CUR.sign===i?' selected':''}>${z.n}（${z.d}）</option>`).join('')}</select>
+   <label class="small" for="zbd">或者输入生日</label>
+   <input id="zbd" type="date" onchange="signFromDate(this.value)">
+  </div>`;
+  if(CUR.sign==null){const nz=nearestZod(R.a.map(x=>Math.round(x)));return out+`<p class="small" style="margin-top:12px">按星座的传统描述，和你的测试结果气质最像的是 <b>${ZOD[nz].n}</b>（${ZOD[nz].k}）。</p>`}
+  const z=ZOD[CUR.sign],F=FAM[t.f-1],fit=zodFit(R.a,CUR.sign);
+  const agree=[],differ=[];
+  z.v.forEach((x,k)=>{if(x===0)return;const me=R.a[k];const zs=x>0?DIMS[k].hi:DIMS[k].lo;if(Math.abs(me)<0.25)return;(Math.sign(me)===Math.sign(x)?agree:differ).push(`${DIMS[k].name}偏“${zs}”`)});
+  const nz=nearestZod(R.a.map(x=>Math.round(x)));
+  out+=`<div class="card stack" style="margin-top:12px;border-top:6px solid ${fcol(t.f)}">
+   <div style="font-family:var(--display);font-size:24px;font-weight:900">${t.n} × ${z.n}</div>
+   <div class="small muted">${F.name} · ${z.el}象星座（${ELEM[z.el]}）· 传统特质：${z.k}</div>
+   <p style="margin:0">${COMBO[t.f][z.el]}</p>
+   <div class="row"><span class="stat"><span class="small muted">与星座传统描述吻合度</span><b class="tabnum">${fit}%</b></span></div>
+   ${agree.length?`<div class="small"><b>和星座描述一致：</b>${agree.join('、')}</div>`:''}
+   ${differ.length?`<div class="small"><b>和星座描述相反：</b>${differ.join('、')}。在这些方面，你是一个“不太典型”的${z.n}。</div>`:''}
+   ${nz!==CUR.sign?`<div class="small">按测试结果，你的气质其实更像 <b>${ZOD[nz].n}</b>（${ZOD[nz].k}）。</div>`:'<div class="small">你的测试结果和自己星座的传统描述正好最接近。</div>'}
+  </div>
+  <p class="small muted" style="margin-top:12px">星座部分仅供娱乐。大样本研究没有发现出生星座和人格分数之间有可靠关联，所以“吻合度”衡量的是你和星座传统描述像不像，不是星座对你的影响。</p>`;
+  return out;
+};
+
+// ---------- 分享 ----------
+function hexName(s){return Array.from(new TextEncoder().encode(s)).map(b=>b.toString(16).padStart(2,'0')).join('')}
+function unhex(h){try{const b=new Uint8Array(h.match(/../g).map(x=>parseInt(x,16)));return new TextDecoder().decode(b)}catch(e){return ''}}
+function shareURL(name){
+  const base=location.hostname.endsWith('github.io')?location.origin+location.pathname:PAGES_URL;
+  return base+'#r-'+CUR.answers.join('')+(name?'-'+hexName(name.slice(0,20)):'')+(CUR.sign!=null?'-z'+CUR.sign:'');
+}
+function report(R,name){
+  const t=T[R.m[0].i];const rs=[...R.ria].sort((a,b)=>b.sc-a.sc);
+  let s=`【五象人格测试】${name?name+'的':''}结果\n角色：${t.n}（${FAM[t.f-1].name}）· 匹配度 ${R.m[0].p}%\n${t.tag}\n\n五个维度（0–100，50 为中点）：\n`;
+  DIMS.forEach((d,i)=>{s+=`· ${d.name}（${d.lo}↔${d.hi}）：${pct(R.u[i])}\n`;FACETS[i].forEach((f,fi)=>s+=`    ${f.n} ${pct(R.facets[i][fi])}\n`)});
+  s+=`\n对应 MBTI：${mbti(R.u).code}${CUR.sign!=null?'\n星座：'+ZOD[CUR.sign].n:''}`;
+  s+=`\n相似角色：${T[R.m[1].i].n}、${T[R.m[2].i].n}\n职业兴趣：${rs.slice(0,3).map(r=>r.n).join(' · ')}\n典型职业：${t.j.join('、')}\n建议：${t.s}\n`;
+  return s;
+}
+function shareBlock(R,t){
+  if(shared!==null)return '';
+  return `<h2>分享结果</h2><div class="card stack">
+   <p class="small" style="margin:0">分享链接里带着全部作答，朋友打开就能看到和你一样完整的结果，包括细项、职业和规划。链接不经过任何服务器。</p>
+   <label class="small" for="sname">名字（同时作为这条记录的名字）</label>
+   <input id="sname" maxlength="20" placeholder="比如：小谭" value="${esc(CUR.name==='我'?'':CUR.name)}" onchange="renameCur(this.value)">
+   <div class="row"><button class="primary" onclick="doShare()" id="sbtn">分享链接</button><button onclick="copyReport()" id="rbtn">复制文字版报告</button></div>
+   <div class="small muted" id="slink" style="word-break:break-all"></div>
+  </div>`;
+}
+async function doShare(){
+  const name=$('sname').value.trim(),url=shareURL(name),t=T[CUR.m[0].i];
+  const text=`我是「${t.n}」（${FAM[t.f-1].name}）：${t.tag}。来看看我的完整人格报告，也测测你是哪种：`;
+  $('slink').textContent=url;
+  try{if(navigator.share){await navigator.share({title:'五象人格测试',text,url});return}}catch(e){if(e.name==='AbortError')return}
+  try{await navigator.clipboard.writeText(text+url);$('sbtn').textContent='链接已复制'}catch(e){$('sbtn').textContent='请长按下方链接复制'}
+}
+async function copyReport(){
+  const name=$('sname')?$('sname').value.trim():'';
+  try{await navigator.clipboard.writeText(report(CUR,name)+'\n完整结果：'+shareURL(name));$('rbtn').textContent='已复制'}catch(e){$('rbtn').textContent='复制失败，请重试'}
+}
+
+function home(){if(location.hash)history.replaceState(null,'',location.pathname);shared=null;view('intro');renderRecs()}
+function parseHash(h){
+  const m=h.match(/^#r-([1-5]{30}|[1-5]{60})((?:-[0-9a-z]+)*)$/);if(!m)return null;
+  let name='',sign=null;m[2].split('-').filter(Boolean).forEach(p=>{if(/^z\d+$/.test(p))sign=Math.min(11,+p.slice(1));else if(/^[0-9a-f]+$/.test(p))name=unhex(p)});
+  return {ans:m[1].split('').map(Number),name,sign};
+}
+function route(){
+  const p=parseHash(location.hash);
+  if(p){showResult(p.ans,p.name,null,p.sign);return true}
+  return false;
+}
+renderGallery();renderRecs();route();
+addEventListener('hashchange',route);
+</script>
+</body>
+</html>
