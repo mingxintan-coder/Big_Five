@@ -532,7 +532,7 @@ function finish(){
 }
 function showResult(answers,sharedName,recId,sign){
   shared=sharedName;CUR=analyze(answers);tab='overview';LOVEP=null;
-  CUR.rec=recId||null;
+  CUR.rec=recId||null;CAREER_MBTI=null;
   const rec=recId?loadRecs().find(x=>x.id===recId):null;
   CUR.sign=sign!=null?sign:(rec&&rec.sign!=null?rec.sign:null);
   CUR.name=rec?rec.name:(sharedName||'');
@@ -605,6 +605,8 @@ const TABS={
   <h2>最可能适合的领域</h2>
   <div class="grid2">${rs.slice(0,2).map(r=>`<div class="card"><b>${r.n}</b><p class="small muted" style="margin:4px 0 8px">${r.d}</p><div class="chips">${r.j.map(x=>`<span class="chip">${x}</span>`).join('')}</div></div>`).join('')}</div>
   <h2>「${t.n}」的典型职业</h2><div class="card"><div class="chips">${t.j.map(x=>`<span class="chip">${x}</span>`).join('')}</div></div>
+  <h2>按 MBTI 查看职业</h2>
+  ${mbtiCareer(R)}
   <h2>工作风格</h2>
   <div class="card stack small">
    <div><b>最舒服的环境：</b>${F.env}</div>
@@ -784,12 +786,36 @@ function love(a,b){
   const label=sc>=85?'天作之合':sc>=75?'非常合拍':sc>=65?'稳中有甜':sc>=55?'需要磨合':'挑战模式';
   return {sc,label,sub,notes,date};
 }
+
+const MBTIS=['INTJ','INTP','ENTJ','ENTP','INFJ','INFP','ENFJ','ENFP','ISTJ','ISFJ','ESTJ','ESFJ','ISTP','ISFP','ESTP','ESFP'];
+function mbtiVec(code){const c=code.toUpperCase();const v=[c[0]==='E'?0.7:-0.7,c[1]==='N'?0.7:-0.7,c[3]==='J'?0.7:-0.7,c[2]==='F'?0.7:-0.7,0];
+  if(c.endsWith('-A'))v[4]=0.6;else if(c.endsWith('-T'))v[4]=-0.6;return v}
+function nearestType(a){return T.map((t,i)=>({i,d:t.v.reduce((s,x,k)=>s+(x-a[k])**2,0)+(t.n==='平衡者'?9:0)})).sort((x,y)=>x.d-y.d)[0].i}
+function mbtiOptions(sel){return MBTIS.map(m=>['', '-A','-T'].map(s=>`<option value="${m+s}"${sel===m+s?' selected':''}>${m+s}${s===''?'（不确定 A/T）':''}</option>`).join('')).join('')}
+const SELSTYLE='font:inherit;padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink)';
+let CAREER_MBTI=null;
 function setPartner(kind,val){
   if(kind==='rec'){const r=loadRecs().find(x=>x.id===val);if(!r)return;const A=analyze(r.ans.split('').map(Number));LOVEP={name:r.name||'TA',a:A.a,i:A.m[0].i}}
+  else if(kind==='mbti'){if(!val)return;const a=mbtiVec(val);LOVEP={name:val,a,i:nearestType(a)}}
   else if(kind==='type'){if(val==='')return;const i=+val;LOVEP={name:T[i].n+'（类型原型）',a:T[i].v.slice(),i}}
   else if(kind==='link'){const h=val.slice(val.indexOf('#'));const p=parseHash(h);if(!p){$('lerr').textContent='没认出这个链接，请粘贴完整的分享链接（包含 #r- 那一段）。';return}
     const A=analyze(p.ans);LOVEP={name:p.name||'TA',a:A.a,i:A.m[0].i}}
   renderResult();
+}
+
+function mbtiCareer(R){
+  const code=CAREER_MBTI||mbti(R.u).code;
+  const a=mbtiVec(code),ti=nearestType(a),tt=T[ti];
+  const ria=RIA.map(r=>{const w=r.w.reduce((s,x)=>s+Math.abs(x),0);return {...r,sc:(r.w.reduce((s,x,k)=>s+x*a[k],0)/w)}}).sort((x,y)=>y.sc-x.sc);
+  const tp=temper(code.slice(0,4));
+  return `<div class="card stack">
+   <label class="small" for="cmbti">选择一个 MBTI 类型（默认是你换算出的类型）</label>
+   <select id="cmbti" onchange="CAREER_MBTI=this.value;renderResult()" style="${SELSTYLE}">${mbtiOptions(code)}</select>
+   <div class="mini">${avatar(ti)}<div><b style="font-family:var(--display);font-size:20px">${code}</b> <span class="small muted">${tp[0]}</span><div class="small">在五象里最接近「${tt.n}」（${FAM[tt.f-1].name}）</div></div></div>
+   <div class="small"><b>兴趣倾向：</b>${ria.slice(0,3).map(r=>r.n).join(' · ')}</div>
+   <div class="small"><b>典型职业：</b></div><div class="chips">${[...new Set([...tt.j,...ria[0].j.slice(0,3),...ria[1].j.slice(0,2)])].map(x=>`<span class="chip">${x}</span>`).join('')}</div>
+   <p class="small muted" style="margin:0">MBTI 只有四个维度、每维只分两边，换算出的职业比你自己的五象结果粗略。</p>
+  </div>`;
 }
 TABS.love=function(R,t){
   const recs=loadRecs().filter(r=>r.id!==CUR.rec);
@@ -800,7 +826,9 @@ TABS.love=function(R,t){
    <label class="small" for="llink">粘贴 TA 的分享链接</label>
    <div class="row"><input id="llink" placeholder="https://…#r-…" style="flex:1;max-width:none"><button onclick="setPartner('link',$('llink').value)">配对</button></div>
    <div class="small" id="lerr" style="color:var(--warn)"></div>
-   <label class="small" for="ltype">还没测？先按 TA 的角色类型估算</label>
+   <label class="small" for="lmbti">还没测？按 TA 的 MBTI 估算</label>
+   <select id="lmbti" onchange="setPartner('mbti',this.value)" style="${SELSTYLE}"><option value="">选择 MBTI 类型</option>${mbtiOptions(LOVEP&&/^[EI]/.test(LOVEP.name)?LOVEP.name:'')}</select>
+   <label class="small" for="ltype">或按 TA 的角色类型估算</label>
    <select id="ltype" onchange="setPartner('type',this.value)" style="font:inherit;padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink)"><option value="">选择一种角色</option>${T.map((x,i)=>`<option value="${i}">${x.n}（${FAM[x.f-1].name}）</option>`).join('')}</select>
   </div>`;
   if(!LOVEP)return out+`<p class="small muted" style="margin-top:12px">配对算法依据的是关系研究中较稳定的发现：双方的宜人性（和）、情绪稳定性（稳）和尽责性（律）越高，关系满意度往往越高；“性格相似”本身的作用比人们以为的小，但在做事节奏和情绪上差异过大时，摩擦会增多。仅供娱乐和沟通参考。</p>`;
